@@ -36,7 +36,7 @@ export default function LoginForm() {
     });
 
     if (res && res.ok) {
-      router.push("/dashboard");
+      router.push("/");
     } else if (res?.error === "USER_NOT_FOUND") {
       setEmailError("El usuario no existe");
     } else if (res?.error === "WRONG_PASSWORD") {
