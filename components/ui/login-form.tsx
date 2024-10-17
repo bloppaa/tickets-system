@@ -22,9 +22,13 @@ export default function LoginForm() {
     formState: { errors },
   } = useForm();
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const onSubmit = handleSubmit(async (data) => {
+    setEmailError(null);
+    setPasswordError(null);
+
     const res = await signIn("credentials", {
       email: data.email,
       password: data.password,
@@ -33,8 +37,10 @@ export default function LoginForm() {
 
     if (res && res.ok) {
       router.push("/dashboard");
-    } else {
-      setError(res?.error ?? null);
+    } else if (res?.error === "USER_NOT_FOUND") {
+      setEmailError("El usuario no existe");
+    } else if (res?.error === "WRONG_PASSWORD") {
+      setPasswordError("La contraseña es incorrecta");
     }
   });
 
@@ -57,11 +63,14 @@ export default function LoginForm() {
                 },
               })}
             />
-            {errors.email && (
+            {(errors.email && (
               <span className="text-red-500 text-xs">
                 {errors.email.message?.toString()}
               </span>
-            )}
+            )) ||
+              (emailError && (
+                <span className="text-red-500 text-xs">{emailError}</span>
+              ))}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Contraseña</Label>
@@ -74,11 +83,13 @@ export default function LoginForm() {
                 },
               })}
             />
-            {errors.password && (
+            {(errors.password && (
               <span className="text-red-500 text-xs">
                 {errors.password.message?.toString()}
               </span>
-            )}
+            )) || (passwordError && (
+              <span className="text-red-500 text-xs">{passwordError}</span>
+            ))}
           </div>
         </CardContent>
         <CardFooter>
