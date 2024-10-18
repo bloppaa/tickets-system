@@ -1,0 +1,38 @@
+[
+    {
+      "name": "Homero",
+      "email": "homero@example.com",
+      "rut": "12345678-9",
+      "password": "password123",
+      "companyRut": null,
+      "isClient": false,
+      "tickets": [
+        {
+          "title": "Login Issue",
+          "description": "No me puedo loguear en la plataforma",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "name": "Pablo",
+      "email": "pablo@company.com",
+      "rut": "98765432-1",
+      "password": "pabloelpro",
+      "companyRut": "98765432-1",
+      "isClient": true,
+      "tickets": [
+        {
+          "title": "Password Reset",
+          "description": "necesito ayuda pare resetear mi pass",
+          "status": "open"
+        },
+        {
+          "title": "New Feature Request",
+          "description": "Solicitando una nueva función",
+          "status": "closed"
+        }
+      ]
+    }
+  ]
+  

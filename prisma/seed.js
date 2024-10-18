@@ -1,8 +1,52 @@
 import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcrypt";
+import fs from "fs";
 
 const prisma = new PrismaClient()
 
+async function main() {
+  const data = JSON.parse(fs.readFileSync("datatest.json", "utf-8"));
+
+  for (const person of data) {
+    // Hash password
+    const hashedPassword = await bcrypt.hash(person.password, 10);
+
+    // Upsert for insert or uptadete
+    const createdPerson = await prisma.person.upsert({
+      where: { rut: person.rut }, // search by RUT
+      update: {},
+      create: {
+        name: person.name,
+        email: person.email,
+        rut: person.rut,
+        password: hashedPassword,
+        companyRut: person.companyRut,
+        isClient: person.isClient,
+        tickets: {
+          create: person.tickets.map((ticket) => ({
+            title: ticket.title,
+            description: ticket.description,
+            status: ticket.status,
+          })),
+        },
+      },
+    });
+
+    console.log(`Person created or updated: ${createdPerson.email}`);
+  }
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
+
+/*
 async function main() {
   const password1 = await bcrypt.hash("password1", 10);
   const user1 = await prisma.user.upsert({
@@ -48,3 +92,4 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
+*/
