@@ -30,9 +30,15 @@ model Ticket {
   id          Int      @id @default(autoincrement())
   title       String
   description String
-  status      String   @default("open")
+  status      TicketStatus   @default(OPEN)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  personRut   String
-  person      Person   @relation(fields: [personRut], references: [rut])
+  personId    Int
+  person      Person   @relation(fields: [personId], references: [id])
+}
+
+enum TicketStatus{
+  OPEN
+  IN_PROGRESS
+  CLOSED
 }
