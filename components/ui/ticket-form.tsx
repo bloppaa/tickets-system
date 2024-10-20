@@ -55,7 +55,7 @@ export default function TicketForm() {
     setIsSubmitting(true)
     // Aquí iría la lógica para enviar el formulario a tu backend
     console.log(values)
-    await new Promise(resolve => setTimeout(resolve, 2000)) // Simulando una petición al servidor
+    await new Promise(resolve => setTimeout(resolve, 2000))
     setIsSubmitting(false)
     toast({
       title: "Ticket creado",
@@ -116,10 +116,10 @@ export default function TicketForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="baja">tipo 1</SelectItem>
-                  <SelectItem value="media">tipo 2</SelectItem>
-                  <SelectItem value="alta">tipo 3</SelectItem>
-                  <SelectItem value="urgente">tipo 3</SelectItem>
+                  <SelectItem value="1">tipo 1</SelectItem>
+                  <SelectItem value="2">tipo 2</SelectItem>
+                  <SelectItem value="3">tipo 3</SelectItem>
+                  <SelectItem value="...">....</SelectItem>
                 </SelectContent>
               </Select>
               <FormDescription>
