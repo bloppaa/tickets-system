@@ -1,15 +1,15 @@
 /*
   Warnings:
 
-  - You are about to drop the `client` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `user` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `Client` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
 
 */
 -- DropTable
-DROP TABLE `client`;
+DROP TABLE `Client`;
 
 -- DropTable
-DROP TABLE `user`;
+DROP TABLE `User`;
 
 -- CreateTable
 CREATE TABLE `Person` (
@@ -33,7 +33,7 @@ CREATE TABLE `Ticket` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NOT NULL,
-    `status` VARCHAR(191) NOT NULL DEFAULT 'open',
+    `status` ENUM('OPEN', 'IN_PROGRESS', 'CLOSED') NOT NULL DEFAULT 'OPEN',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `personId` INTEGER NOT NULL,
