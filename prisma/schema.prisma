@@ -13,23 +13,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String
-  email     String   @unique
-  rut       String   @unique
-  password  String   @db.Char(60)
+model Person {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  email       String   @unique
+  rut         String   @unique
+  password    String   @db.Char(60)
+  companyRut  String?  // Puede ser null
+  isClient    Boolean  // Campo para indicar si es cliente o no
+  tickets     Ticket[] // Relación con los tickets
 }
 
-model Client {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  name       String
-  email      String   @unique
-  rut        String   @unique
-  companyRut String
-  password   String   @db.Char(60)
+model Ticket {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  status      TicketStatus   @default(OPEN)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  personId    Int
+  person      Person   @relation(fields: [personId], references: [id])
+}
+
+enum TicketStatus{
+  OPEN
+  IN_PROGRESS
+  CLOSED
 }

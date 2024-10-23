@@ -1,50 +1,54 @@
 import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcrypt";
+import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const prisma = new PrismaClient()
 
-async function main() {
-  const password1 = await bcrypt.hash("password1", 10);
-  const user1 = await prisma.user.upsert({
-    where: { email: "user1@gmail.com" },
-    update: {},
-    create: {
-      name: "User 1",
-      email: "user1@gmail.com",
-      rut: "11.111.111-1",
-      password: password1,
-    },
-  });
-  const password2 = await bcrypt.hash("password2", 10);
-  const user2 = await prisma.user.upsert({
-    where: { email: "user2@gmail.com" },
-    update: {},
-    create: {
-      name: "User 2",
-      email: "user2@gmail.com",
-      rut: "22.222.222-2",
-      password: password2,
-    },
-  });
-  const password3 = await bcrypt.hash("password3", 10);
-  const user3 = await prisma.user.upsert({
-    where: { email: "user3@gmail.com" },
-    update: {},
-    create: {
-      name: "User 3",
-      email: "user3@gmail.com",
-      rut: "33.333.333-3",
-      password: password3,
-    },
-  });
-  console.log({ user1, user2, user3 });
+async function hashPassword(password) {
+  return await bcrypt.hash(password, 10);
 }
+
+async function createOrUpdatePerson(person, hashedPassword) {
+  return await prisma.person.upsert({
+    where: { rut: person.rut },
+    update: {},
+    create: {
+      name: person.name,
+      email: person.email,
+      rut: person.rut,
+      password: hashedPassword,
+      companyRut: person.companyRut,
+      isClient: person.isClient,
+      tickets: {
+        create: person.tickets ? person.tickets.map((ticket) => ({
+          title: ticket.title,
+          description: ticket.description,
+          status: ticket.status,
+        })) : [],
+      },
+    },
+  });
+}
+
+async function main() {
+  const data = JSON.parse(fs.readFileSync("datatest.json", "utf-8"));
+  
+  await Promise.all(data.map(async (person) => {
+    const hashedPassword = await hashPassword(person.password);
+    const createdPerson = await createOrUpdatePerson(person, hashedPassword);
+    console.log(`Person created or updated: ${createdPerson.name}`);
+  }));
+}
+
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    console.error('Unexpected error:', e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
