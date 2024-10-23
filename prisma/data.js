@@ -1,9 +1,13 @@
+/**
+ * ! Datos de prueba. Eliminar antes de pasar a producción
+ */
+
 export const users = [
   {
-    name: 'Pablo',
-    email: 'pablo@pablo.com',
-    rut: '1.234.567-8',
-    password: '$2a$10$ARDG5TO880aYRzoEnOJdyuqYa.lCL8c8HL4WEuWlKdLsak6jNSeNu',
+    name: "Pablo",
+    email: "pablo@pablo.com",
+    rut: "1.234.567-8",
+    password: "$2a$10$ARDG5TO880aYRzoEnOJdyuqYa.lCL8c8HL4WEuWlKdLsak6jNSeNu",
   },
   {
     name: "Charles",

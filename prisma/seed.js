@@ -1,3 +1,8 @@
+/**
+ * ! Script para llenar la base de datos con datos de prueba
+ * ! Eliminar antes de pasar a producción
+ */
+
 import { PrismaClient } from "@prisma/client";
 import { users, clients } from "./data.js";
 
