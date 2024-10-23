@@ -25,7 +25,7 @@ const CreateTicketPage = () => {
     <div className="flex justify-center items-center min-h-screen">
       <Card className="w-full max-w-xl">
         <CardHeader>
-          <CardTitle>Crear ticket de soporte</CardTitle>
+          <CardTitle className="text-xl">Crear ticket de soporte</CardTitle>
           <CardDescription>
             Por favor, proporciona los detalles de tu problema para que podamos
             ayudarte mejor.
