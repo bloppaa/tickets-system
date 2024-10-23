@@ -4,8 +4,6 @@
     "email": "max@gmail.com",
     "rut": "12345678-9",
     "password": "123123",
-    "companyRut": null,
-    "isClient": false,
     "tickets": []
   },
   {
@@ -13,8 +11,6 @@
     "email": "camilo@gmail.com",
     "rut": "11222333-4",
     "password": "pass123",
-    "companyRut": null,
-    "isClient": false,
     "tickets": []
   },
   {
@@ -23,7 +19,6 @@
     "rut": "98765432-1",
     "password": "pabloelpro",
     "companyRut": "98765432-1",
-    "isClient": true,
     "tickets": [
       {
         "title": "Password Reset",

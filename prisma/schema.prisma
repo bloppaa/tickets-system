@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -24,8 +25,9 @@ model Client {
   updatedAt  DateTime @updatedAt
   name       String
   email      String   @unique
-  companyRut String
   rut        String   @unique
+  companyRut String
+  password   String   @db.Char(60)
   tickets    Ticket[]
 }
 
