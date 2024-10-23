@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -21,26 +23,56 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 const CreateTicketPage = () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    const ticketData = {
+      title: formData.get("title") as string,
+      type: formData.get("type") as string,
+      priority: formData.get("priority") as string,
+      description: formData.get("description") as string,
+    };
+
+    const response = await fetch("/api/tickets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ticketData),
+    });
+
+    if (response.ok) {
+      alert("Ticket creado con éxito");
+    } else {
+      alert("Hubo un error al crear el ticket");
+    }
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <Card className="w-full max-w-xl">
-        <CardHeader>
-          <CardTitle className="text-xl">Crear ticket de soporte</CardTitle>
-          <CardDescription>
-            Por favor, proporciona los detalles de tu problema para que podamos
-            ayudarte mejor.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form>
+      <form onSubmit={handleSubmit}>
+        <Card className="w-full max-w-xl">
+          <CardHeader>
+            <CardTitle className="text-xl">Crear ticket de soporte</CardTitle>
+            <CardDescription>
+              Por favor, proporciona los detalles de tu problema para que
+              podamos ayudarte mejor.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="title">Título</Label>
-                <Input id="title" placeholder="Resumen breve del problema" />
+                <Input
+                  id="title"
+                  name="title"
+                  placeholder="Resumen breve del problema"
+                />
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="type">Tipo de problema</Label>
-                <Select>
+                <Select name="type">
                   <SelectTrigger id="type">
                     <SelectValue placeholder="Selecciona el tipo de problema" />
                   </SelectTrigger>
@@ -53,7 +85,7 @@ const CreateTicketPage = () => {
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="priority">Prioridad</Label>
-                <Select>
+                <Select name="priority">
                   <SelectTrigger id="priority">
                     <SelectValue placeholder="Selecciona la prioridad" />
                   </SelectTrigger>
@@ -68,17 +100,20 @@ const CreateTicketPage = () => {
                 <Label htmlFor="description">Descripción del problema</Label>
                 <Textarea
                   id="description"
+                  name="description"
                   placeholder="Describe tu problema en detalle"
                   required
                 />
               </div>
             </div>
-          </form>
-        </CardContent>
-        <CardFooter className="">
-          <Button className="w-full">Crear ticket</Button>
-        </CardFooter>
-      </Card>
+          </CardContent>
+          <CardFooter className="">
+            <Button className="w-full" type="submit">
+              Crear ticket
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
     </div>
   );
 };
