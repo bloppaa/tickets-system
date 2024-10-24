@@ -28,11 +28,11 @@ async function main() {
   });
   const password3 = await bcrypt.hash("password3", 10);
   const user3 = await prisma.user.upsert({
-    where: { email: "user3@gmail.com" },
+    where: { email: "cbravojelvez@gmail.com" },
     update: {},
     create: {
       name: "User 3",
-      email: "user3@gmail.com",
+      email: "cbravojelvez@gmail.com",
       rut: "33.333.333-3",
       password: password3,
     },

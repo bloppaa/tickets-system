@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
 
 const secretKey = process.env.JWT_SECRET_KEY || 'mysecretkey';
 
@@ -27,3 +28,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Token inválido o expirado' }, { status: 400 });
   }
 }
+ 
