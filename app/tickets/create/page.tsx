@@ -21,8 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 
 const CreateTicketPage = () => {
+  const router = useRouter();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -42,11 +45,13 @@ const CreateTicketPage = () => {
       body: JSON.stringify(ticketData),
     });
 
+    const result = await response.json();
     if (response.ok) {
-      alert("Ticket creado con éxito");
+      alert(result.message);
     } else {
-      alert("Hubo un error al crear el ticket");
+      alert(result.message);
     }
+    router.push("/");
   };
 
   return (
@@ -79,7 +84,7 @@ const CreateTicketPage = () => {
                   <SelectContent position="popper">
                     <SelectItem value="hardware">Hardware</SelectItem>
                     <SelectItem value="software">Software</SelectItem>
-                    <SelectItem value="otro">Otro</SelectItem>
+                    <SelectItem value="other">Otro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -90,9 +95,9 @@ const CreateTicketPage = () => {
                     <SelectValue placeholder="Selecciona la prioridad" />
                   </SelectTrigger>
                   <SelectContent position="popper">
-                    <SelectItem value="baja">Baja</SelectItem>
-                    <SelectItem value="media">Media</SelectItem>
-                    <SelectItem value="alta">Alta</SelectItem>
+                    <SelectItem value="low">Baja</SelectItem>
+                    <SelectItem value="medium">Media</SelectItem>
+                    <SelectItem value="high">Alta</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

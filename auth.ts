@@ -20,27 +20,36 @@ export const authOptions = {
       authorize: async (credentials, req) => {
         if (!credentials) return null;
 
-        const user = await prisma.user.findUnique({
+        const person = await prisma.person.findUnique({
           where: { email: credentials.email },
         });
 
-        if (!user) throw new Error("USER_NOT_FOUND");
+        if (!person) throw new Error("USER_NOT_FOUND");
 
         const passwordsMatch = await bcrypt.compare(
           credentials.password,
-          user.password
+          person.password
         );
 
         if (!passwordsMatch) throw new Error("WRONG_PASSWORD");
 
         return {
-          id: user.id.toString(),
-          name: user.name,
-          email: user.email,
+          id: person.id.toString(),
+          name: person.name,
+          email: person.email,
         };
       },
     }),
   ],
+  callbacks: {
+    session: ({ session, token }) => ({
+      ...session,
+      user: {
+        ...session.user,
+        id: token.sub,
+      },
+    }),
+  },
   pages: {
     signIn: "/login",
   },
