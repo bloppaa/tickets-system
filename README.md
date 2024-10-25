@@ -44,7 +44,7 @@ saY7kl76gVM1lAdemR0Pn2ctN1QksDrcUTbhoyz6MNs=
 
 Finalmente, cambiar el nombre del archivo de `.env.example` a `.env`. El archivo debería quedar finalmente algo así:
 
-```
+```env
 DATABASE_URL=mysql://root:12345@localhost:3307/tickets_system
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=saY7kl76gVM1lAdemR0Pn2ctN1QksDrcUTbhoyz6MNs=
