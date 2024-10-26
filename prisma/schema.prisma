@@ -11,25 +11,31 @@ model Person {
   id         Int      @id @default(autoincrement())
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  role       Role
   name       String
   email      String   @unique
   rut        String   @unique
   password   String   @db.Char(60)
   assigned   Ticket[] @relation(name: "UserToTicket")
   created    Ticket[] @relation(name: "ClientToTicket")
-  isClient   Boolean
   companyRut String?
+}
+
+enum Role {
+  Admin
+  User
+  Client
 }
 
 model Ticket {
   id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   title       String
   description String
   status      Status   @default(Open)
   type        Type
   priority    Priority
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
   user        Person?  @relation(name: "UserToTicket", fields: [userId], references: [id])
   userId      Int?
   client      Person   @relation(name: "ClientToTicket", fields: [clientId], references: [id])

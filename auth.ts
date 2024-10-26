@@ -9,6 +9,17 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/db";
 import bcrypt from "bcrypt";
 
+declare module "next-auth" {
+  interface User {
+    id: string;
+    role: string;
+  }
+
+  interface Session {
+    user: User;
+  }
+}
+
 export const authOptions = {
   providers: [
     CredentialsProvider({
@@ -37,18 +48,26 @@ export const authOptions = {
           id: person.id.toString(),
           name: person.name,
           email: person.email,
+          role: person.role,
         };
       },
     }),
   ],
   callbacks: {
-    session: ({ session, token }) => ({
+    session: ({ session, token, user }) => ({
       ...session,
       user: {
         ...session.user,
         id: token.sub,
+        role: token.role,
       },
     }),
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.role = user.role;
+      }
+      return token;
+    },
   },
   pages: {
     signIn: "/login",
