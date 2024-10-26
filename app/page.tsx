@@ -1,15 +1,16 @@
 import { authOptions } from "@/auth";
-import { Button } from "@/components/ui/button";
+import SignOutButton from "@/components/signout-button";
 import { getServerSession } from "next-auth";
 
 export default async function HomePage() {
-  const session = await getServerSession(authOptions);
-
-  console.log(session);
+  const session: { user?: { role?: string } } | null = await getServerSession(
+    authOptions
+  );
 
   return (
     <div>
-      <Button>Cerrar sesión</Button>
+      {session?.user?.role && <p>{session.user.role}</p>}
+      <SignOutButton />
     </div>
   );
 }
