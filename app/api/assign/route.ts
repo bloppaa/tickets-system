@@ -7,8 +7,8 @@ import { z } from "zod";
 export async function PATCH(request: Request) {
   const session = await getServerSession(authOptions);
 
-  // verificar que admin este con sesion iniciada
-  if (!session || !session.user.isAdmin) {
+   // verificar que admin este con sesion iniciada
+  if (!session || session.user.role !== "Admin") {
     return new Response(JSON.stringify({ message: "Unauthorized" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
@@ -18,6 +18,7 @@ export async function PATCH(request: Request) {
   try { 
     const body = await request.json();
 
+  
     const assignSchema = z.object({
       ticketId: z.number().int(),
       userId: z.number().int(),
@@ -33,6 +34,19 @@ export async function PATCH(request: Request) {
     }
 
     const { ticketId, userId } = parsedBody.data;
+
+    // Verificar que el usuario asignado tenga el rol adecuado (ejemplo: "User")
+    const user = await prisma.person.findUnique({
+      where: { id: userId },
+      select: { role: true }, 
+    });
+
+    if (!user || user.role !== "User") {
+      return new Response(
+        JSON.stringify({ message: "El usuario asignado debe tener rol de 'User'" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     // Actualizar el ticket en la DB
     await prisma.ticket.update({
