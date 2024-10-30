@@ -1,3 +1,7 @@
+# TODO
+
+- Si existe una sesión y se intenta acceder a la página de login, debería redireccionar a la página principal.
+
 # Configuración
 
 ## Instalar dependencias
