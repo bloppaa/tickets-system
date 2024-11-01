@@ -2,7 +2,7 @@ import { authOptions } from "@/auth";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import prisma from "@/lib/db";
-import { Priority, Type } from "@prisma/client";
+import { Priority, Type, Status } from "@prisma/client";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -117,6 +117,21 @@ export async function GET() {
           translatedType = ticket.type;
       }
 
+      let translatedStatus;
+      switch (ticket.status) {
+        case Status.Open:
+          translatedStatus = "Abierto";
+          break;
+        case Status.InProgress:
+          translatedStatus = "En progreso";
+          break;
+        case Status.Closed:
+          translatedStatus = "Cerrado";
+          break;
+        default:
+          translatedStatus = ticket.status;
+      }
+
       const formattedCreatedAt = new Date(ticket.createdAt).toLocaleDateString(
         "es-ES"
       );
@@ -128,6 +143,7 @@ export async function GET() {
         ...ticket,
         priority: translatedPriority,
         type: translatedType,
+        status: translatedStatus,
         createdAt: formattedCreatedAt,
         updatedAt: formattedUpdatedAt,
       };
