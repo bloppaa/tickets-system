@@ -19,7 +19,6 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Validar que los datos del ticket sean correctos
     const ticketSchema = z.object({
       title: z.string().min(1, "Title is required"),
       description: z.string().min(1, "Description is required"),
@@ -38,12 +37,14 @@ export async function POST(request: Request) {
       });
     }
 
+    const { title, description, type, priority } = parsedBody.data;
+
     await prisma.ticket.create({
       data: {
-        title: parsedBody.data.title,
-        description: parsedBody.data.description,
-        type: capitalize(parsedBody.data.type) as Type,
-        priority: capitalize(parsedBody.data.priority) as Priority,
+        title,
+        description,
+        type: capitalize(type) as Type,
+        priority: capitalize(priority) as Priority,
         client: { connect: { id: parseInt(session.user.id as string) } },
       },
     });
@@ -56,6 +57,90 @@ export async function POST(request: Request) {
     console.error(error);
     return new Response(
       JSON.stringify({ message: "Hubo un error al crear el ticket" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+}
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return new Response(JSON.stringify({ message: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    const tickets = await prisma.ticket.findMany({
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        type: true,
+        status: true,
+        priority: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    const translatedTickets = tickets.map((ticket) => {
+      let translatedPriority;
+      switch (ticket.priority) {
+        case Priority.Low:
+          translatedPriority = "Baja";
+          break;
+        case Priority.Medium:
+          translatedPriority = "Media";
+          break;
+        case Priority.High:
+          translatedPriority = "Alta";
+          break;
+        default:
+          translatedPriority = ticket.priority;
+      }
+
+      let translatedType;
+      switch (ticket.type) {
+        case Type.Hardware:
+          translatedType = "Hardware";
+          break;
+        case Type.Software:
+          translatedType = "Software";
+          break;
+        case Type.Other:
+          translatedType = "Otro";
+          break;
+        default:
+          translatedType = ticket.type;
+      }
+
+      const formattedCreatedAt = new Date(ticket.createdAt).toLocaleDateString(
+        "es-ES"
+      );
+      const formattedUpdatedAt = new Date(ticket.updatedAt).toLocaleDateString(
+        "es-ES"
+      );
+
+      return {
+        ...ticket,
+        priority: translatedPriority,
+        type: translatedType,
+        createdAt: formattedCreatedAt,
+        updatedAt: formattedUpdatedAt,
+      };
+    });
+
+    return new Response(JSON.stringify(translatedTickets), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error(error);
+    return new Response(
+      JSON.stringify({ message: "Hubo un error al obtener los tickets" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
