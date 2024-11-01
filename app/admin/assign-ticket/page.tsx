@@ -42,146 +42,76 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface Ticket {
+type Ticket = {
   id: string;
   title: string;
   status: "Abierto" | "En progreso" | "Cerrado";
-  priority: "Baja" | "Media" | "Alta" | "Urgente";
+  priority: "Baja" | "Media" | "Alta";
   createdAt: string;
   assignedTo: string | null;
-}
+};
 
-// TODO: Borrar y llamar a la API
-// Datos de ejemplo para los tickets
-const tickets: Ticket[] = [
-  {
-    id: "TICKET-001",
-    title: "Error en la página de inicio",
-    status: "Abierto",
-    priority: "Alta",
-    createdAt: "2023-06-01",
-    assignedTo: null,
-  },
-  {
-    id: "TICKET-002",
-    title: "Problema con el carrito de compras",
-    status: "En progreso",
-    priority: "Media",
-    createdAt: "2023-06-02",
-    assignedTo: "Juan Pérez",
-  },
-  {
-    id: "TICKET-003",
-    title: "Solicitud de nueva funcionalidad",
-    status: "Abierto",
-    priority: "Baja",
-    createdAt: "2023-06-03",
-    assignedTo: null,
-  },
-  // Agrega más tickets según sea necesario
-];
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
 
-const users = [
-  "Juan Pérez",
-  "María García",
-  "Carlos Rodríguez",
-  "Ana Martínez",
-  "Luis Sánchez",
-];
+const fetchTickets = async (): Promise<Ticket[]> => {
+  const response = await fetch("/api/tickets");
+  if (!response.ok) {
+    throw new Error("Failed to fetch tickets");
+  }
+  return response.json();
+};
 
-export const columns: ColumnDef<Ticket>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("id")}</div>,
-  },
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Título
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
+const fetchUsers = async (): Promise<User[]> => {
+  const response = await fetch("/api/users");
+  if (!response.ok) {
+    throw new Error("Failed to fetch users");
+  }
+  return response.json();
+};
+
+const updateTicketAssignment = async (ticketId: string, userId: string) => {
+  const response = await fetch("/api/assign-ticket", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
     },
-    cell: ({ row }) => <div>{row.getValue("title")}</div>,
-  },
-  {
-    accessorKey: "status",
-    header: "Estado",
-    cell: ({ row }) => <div>{row.getValue("status")}</div>,
-  },
-  {
-    accessorKey: "priority",
-    header: "Prioridad",
-    cell: ({ row }) => <div>{row.getValue("priority")}</div>,
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Fecha de creación",
-    cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
-  },
-  {
-    accessorKey: "assignedTo",
-    header: "Asignado a",
-    cell: ({ row }) => (
-      <Select
-        value={row.original.assignedTo || ""}
-        onValueChange={(value) => {
-          // TODO: Llamar a la API
-          // Aquí iría la lógica para actualizar la asignación del ticket
-
-          console.log(`Asignando ticket ${row.original.id} a ${value}`);
-        }}
-      >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Sin asignar" />
-        </SelectTrigger>
-        <SelectContent>
-          {users.map((tech) => (
-            <SelectItem key={tech} value={tech}>
-              {tech}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    ),
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const ticket = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menú</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(ticket.id)}
-            >
-              Copiar ID del ticket
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Ver detalles del ticket</DropdownMenuItem>
-            <DropdownMenuItem>Actualizar estado</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
+    body: JSON.stringify({ ticketId, userId }),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to update ticket assignment");
+  }
+};
 
 export default function Page() {
+  const [tickets, setTickets] = React.useState<Ticket[]>([]);
+  const [users, setUsers] = React.useState<User[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ticketsData, usersData] = await Promise.all([
+          fetchTickets(),
+          fetchUsers(),
+        ]);
+        setTickets(ticketsData);
+        setUsers(usersData);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (error) {
+        setError("Failed to load data");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -189,6 +119,102 @@ export default function Page() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+
+  const columns: ColumnDef<Ticket>[] = [
+    {
+      accessorKey: "id",
+      header: "ID",
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue("id")}</div>
+      ),
+    },
+    {
+      accessorKey: "title",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Título
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div>{row.getValue("title")}</div>,
+    },
+    {
+      accessorKey: "status",
+      header: "Estado",
+      cell: ({ row }) => <div>{row.getValue("status")}</div>,
+    },
+    {
+      accessorKey: "priority",
+      header: "Prioridad",
+      cell: ({ row }) => <div>{row.getValue("priority")}</div>,
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Fecha de creación",
+      cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
+    },
+    {
+      accessorKey: "assignedTo",
+      header: "Asignado a",
+      cell: ({ row }) => (
+        <Select
+          value={row.original.assignedTo || ""}
+          onValueChange={async (value) => {
+            try {
+              await updateTicketAssignment(row.original.id, value);
+              console.log(`Asignando ticket ${row.original.id} a ${value}`);
+            } catch (error) {
+              console.error("Error updating ticket assignment:", error);
+            }
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sin asignar" />
+          </SelectTrigger>
+          <SelectContent>
+            {users.map((user) => (
+              <SelectItem key={user.id} value={user.id}>
+                {user.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ),
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const ticket = row.original;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Abrir menú</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(ticket.id)}
+              >
+                Copiar ID del ticket
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Ver detalles del ticket</DropdownMenuItem>
+              <DropdownMenuItem>Actualizar estado</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 
   const table = useReactTable({
     data: tickets,
@@ -208,6 +234,14 @@ export default function Page() {
       rowSelection,
     },
   });
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="container mx-auto my-10">

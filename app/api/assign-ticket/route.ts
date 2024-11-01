@@ -3,22 +3,19 @@ import { authOptions } from "@/auth";
 import prisma from "@/lib/db";
 import { z } from "zod";
 
-//Asignar técnico a un ticket, use patch porque puede cambiar recursos parcialmente y no todo 
 export async function PATCH(request: Request) {
   const session = await getServerSession(authOptions);
 
-   // verificar que admin este con sesion iniciada
-  if (!session || session.user.role !== "Admin") {
+  if (!session) {
     return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 403,
+      status: 401,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  try { 
+  try {
     const body = await request.json();
 
-  
     const assignSchema = z.object({
       ticketId: z.number().int(),
       userId: z.number().int(),
@@ -35,20 +32,29 @@ export async function PATCH(request: Request) {
 
     const { ticketId, userId } = parsedBody.data;
 
-    // Verificar que el usuario asignado tenga el rol adecuado (ejemplo: "User")
     const user = await prisma.person.findUnique({
       where: { id: userId },
-      select: { role: true }, 
+      select: { role: true },
     });
 
-    if (!user || user.role !== "User") {
+    if (!user) {
       return new Response(
-        JSON.stringify({ message: "El usuario asignado debe tener rol de 'User'" }),
+        JSON.stringify({
+          message: "El usuario asignado debe tener rol de 'User'",
+        }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (user.role !== "User") {
+      return new Response(
+        JSON.stringify({
+          message: "El usuario asignado debe tener rol de 'User'",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Actualizar el ticket en la DB
     await prisma.ticket.update({
       where: { id: ticketId },
       data: { userId: userId },
