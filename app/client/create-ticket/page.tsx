@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import DOMPurify from "dompurify";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,16 +27,33 @@ import { useRouter } from "next/navigation";
 const CreateTicketPage = () => {
   const router = useRouter();
 
+  // Desabilita temporalemte el boton de envío al hacer clic
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(event.currentTarget);
 
+    // Se utiliza DOMPurify para sanitizar los inputs. Previene inyecciones HTML o script maliciosos
     const ticketData = {
-      title: formData.get("title") as string,
-      type: formData.get("type") as string,
-      priority: formData.get("priority") as string,
-      description: formData.get("description") as string,
+      title: DOMPurify.sanitize(formData.get("title") as string),
+      type: DOMPurify.sanitize(formData.get("type") as string),
+      priority: DOMPurify.sanitize(formData.get("priority") as string),
+      description: DOMPurify.sanitize(formData.get("description") as string),
     };
+
+    // Verificar la seleccion de tipo de problema
+    if (!["hardware", "software", "other"].includes(ticketData.type)) {
+      alert("Selecciona el Tipo de Problema");
+      return;
+    }
+    
+    // Verificar la seleccion de prioridad
+    if (!["low", "medium", "high"].includes(ticketData.priority)) {
+      alert("Selecciona la Prioridad");
+      return;
+    }
 
     const response = await fetch("/api/tickets", {
       method: "POST",
@@ -52,6 +70,8 @@ const CreateTicketPage = () => {
       alert(result.message);
     }
     router.push("/");
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -73,6 +93,8 @@ const CreateTicketPage = () => {
                   id="title"
                   name="title"
                   placeholder="Resumen breve del problema"
+                  minLength={3}
+                  required
                 />
               </div>
               <div className="flex flex-col space-y-1.5">
@@ -107,14 +129,15 @@ const CreateTicketPage = () => {
                   id="description"
                   name="description"
                   placeholder="Describe tu problema en detalle"
+                  minLength={30}
                   required
                 />
               </div>
             </div>
           </CardContent>
           <CardFooter className="">
-            <Button className="w-full" type="submit">
-              Crear ticket
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Enviando..." : "Crear ticket"}
             </Button>
           </CardFooter>
         </Card>
