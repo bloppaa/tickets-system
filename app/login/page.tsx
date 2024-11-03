@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function LoginPage() {
@@ -22,6 +22,7 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm();
   const router = useRouter();
+  const callbackUrl = useSearchParams().get("callbackUrl");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export default function LoginPage() {
     });
 
     if (res && res.ok) {
-      router.push("/");
+      router.push(callbackUrl || "/");
     } else if (res?.error === "USER_NOT_FOUND") {
       setEmailError("El usuario no existe");
     } else if (res?.error === "WRONG_PASSWORD") {
