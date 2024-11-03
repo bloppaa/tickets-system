@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req: NextRequestWithAuth) {
+    const url = req.nextUrl.clone();
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", url.pathname);
+
     if (
       req.nextUrl.pathname.startsWith("/admin") &&
       req.nextauth.token?.role !== "Admin"
@@ -22,6 +26,10 @@ export default withAuth(
       req.nextauth.token?.role !== "Client"
     ) {
       return NextResponse.rewrite(new URL("/unauthorized", req.url));
+    }
+
+    if (!req.nextauth.token) {
+      return NextResponse.redirect(loginUrl);
     }
   },
   {
