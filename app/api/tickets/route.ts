@@ -77,6 +77,8 @@ export async function GET(request: Request) {
     const statusFilter = url.searchParams.get("status") || undefined;
     const priorityFilter = url.searchParams.get("priority") || undefined;
     const assignmentFilter = url.searchParams.get("filter") || undefined;
+    const codigo = url.searchParams.get("codigo");
+    const rutCliente = url.searchParams.get("rutCliente");
 
     // aca se construyen los filtros 
     const filters: any = {};
@@ -87,17 +89,23 @@ export async function GET(request: Request) {
       filters.priority = priorityFilter as Priority;
     }
     if (assignmentFilter === "unassigned") {
-      filters.userId = null; // Filtrar solo tickets sin asignar
+      filters.userId = null;
     } else if (assignmentFilter === "assigned") {
-      filters.userId = { not: null }; // Filtrar solo tickets asignados
+      filters.userId = { not: null };
+    }
+    if (codigo) {
+      filters.id = parseInt(codigo); // por id ticket 
+    }
+    if (rutCliente) {
+      filters.client = { rut: rutCliente }; // por rut cliente
     }
 
     // aca se obtienen los tickes ordenados 
     const tickets = await prisma.ticket.findMany({
       where: filters,
       orderBy: [
-        { userId: 'asc' }, // Ordenar por tickets sin asignar primero
-        { createdAt: 'desc' } // despues por fecha
+        { userId: 'asc' }, // Tickets sin asignar primero
+        { createdAt: 'desc' }, // Luego por fecha de creación
       ],
       select: {
         id: true,
@@ -109,6 +117,7 @@ export async function GET(request: Request) {
         userId: true,
         createdAt: true,
         updatedAt: true,
+        client: { select: { rut: true, name: true } }, // Información del cliente
       },
     });
 
