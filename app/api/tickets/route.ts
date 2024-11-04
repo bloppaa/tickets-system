@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -73,7 +73,32 @@ export async function GET() {
   }
 
   try {
+    const url = new URL(request.url);
+    const statusFilter = url.searchParams.get("status") || undefined;
+    const priorityFilter = url.searchParams.get("priority") || undefined;
+    const assignmentFilter = url.searchParams.get("filter") || undefined;
+
+    // aca se construyen los filtros 
+    const filters: any = {};
+    if (statusFilter) {
+      filters.status = statusFilter as Status;
+    }
+    if (priorityFilter) {
+      filters.priority = priorityFilter as Priority;
+    }
+    if (assignmentFilter === "unassigned") {
+      filters.userId = null; // Filtrar solo tickets sin asignar
+    } else if (assignmentFilter === "assigned") {
+      filters.userId = { not: null }; // Filtrar solo tickets asignados
+    }
+
+    // aca se obtienen los tickes ordenados 
     const tickets = await prisma.ticket.findMany({
+      where: filters,
+      orderBy: [
+        { userId: 'asc' }, // Ordenar por tickets sin asignar primero
+        { createdAt: 'desc' } // despues por fecha
+      ],
       select: {
         id: true,
         title: true,
@@ -81,71 +106,39 @@ export async function GET() {
         type: true,
         status: true,
         priority: true,
+        userId: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
+    // Traducir y formatear tickets
     const translatedTickets = tickets.map((ticket) => {
-      let translatedPriority;
-      switch (ticket.priority) {
-        case Priority.Low:
-          translatedPriority = "Baja";
-          break;
-        case Priority.Medium:
-          translatedPriority = "Media";
-          break;
-        case Priority.High:
-          translatedPriority = "Alta";
-          break;
-        default:
-          translatedPriority = ticket.priority;
-      }
+      const translatedPriority = {
+        [Priority.Low]: "Baja",
+        [Priority.Medium]: "Media",
+        [Priority.High]: "Alta",
+      }[ticket.priority] || ticket.priority;
 
-      let translatedType;
-      switch (ticket.type) {
-        case Type.Hardware:
-          translatedType = "Hardware";
-          break;
-        case Type.Software:
-          translatedType = "Software";
-          break;
-        case Type.Other:
-          translatedType = "Otro";
-          break;
-        default:
-          translatedType = ticket.type;
-      }
+      const translatedType = {
+        [Type.Hardware]: "Hardware",
+        [Type.Software]: "Software",
+        [Type.Other]: "Otro",
+      }[ticket.type] || ticket.type;
 
-      let translatedStatus;
-      switch (ticket.status) {
-        case Status.Open:
-          translatedStatus = "Abierto";
-          break;
-        case Status.InProgress:
-          translatedStatus = "En progreso";
-          break;
-        case Status.Closed:
-          translatedStatus = "Cerrado";
-          break;
-        default:
-          translatedStatus = ticket.status;
-      }
-
-      const formattedCreatedAt = new Date(ticket.createdAt).toLocaleDateString(
-        "es-ES"
-      );
-      const formattedUpdatedAt = new Date(ticket.updatedAt).toLocaleDateString(
-        "es-ES"
-      );
+      const translatedStatus = {
+        [Status.Open]: "Abierto",
+        [Status.InProgress]: "En progreso",
+        [Status.Closed]: "Cerrado",
+      }[ticket.status] || ticket.status;
 
       return {
         ...ticket,
         priority: translatedPriority,
         type: translatedType,
         status: translatedStatus,
-        createdAt: formattedCreatedAt,
-        updatedAt: formattedUpdatedAt,
+        createdAt: new Date(ticket.createdAt).toLocaleDateString("es-ES"),
+        updatedAt: new Date(ticket.updatedAt).toLocaleDateString("es-ES"),
       };
     });
 
