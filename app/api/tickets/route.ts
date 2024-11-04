@@ -112,7 +112,6 @@ export async function GET(request: Request) {
       },
     });
 
-    // Traducir y formatear tickets
     const translatedTickets = tickets.map((ticket) => {
       const translatedPriority = {
         [Priority.Low]: "Baja",
