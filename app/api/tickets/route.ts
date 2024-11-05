@@ -93,6 +93,11 @@ export async function GET(request: Request) {
       whereCondition.priority = capitalize(priority) as Priority;
     }
 
+    const type = searchParams.get("type");
+    if (type) {
+      whereCondition.type = capitalize(type) as Type;
+    }
+
     const assigned = searchParams.get("assigned");
     if (assigned === "false") {
       whereCondition.userId = null;
