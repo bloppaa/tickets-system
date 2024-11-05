@@ -89,7 +89,6 @@ const updateTicketAssignment = async (ticketId: string, userId: string) => {
 export default function Page() {
   const [tickets, setTickets] = React.useState<Ticket[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
-  const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -104,9 +103,6 @@ export default function Page() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         setError("Failed to load data");
-        console.error(error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
@@ -234,10 +230,6 @@ export default function Page() {
       rowSelection,
     },
   });
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   if (error) {
     return <div>{error}</div>;
