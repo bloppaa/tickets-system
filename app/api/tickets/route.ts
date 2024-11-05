@@ -16,6 +16,13 @@ export async function POST(request: Request) {
     });
   }
 
+  if (session?.user.role !== "Client") {
+    return new Response(JSON.stringify({ message: "Forbidden" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const body = await request.json();
 
@@ -63,14 +70,14 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  // const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
 
-  // if (!session) {
-  //   return new Response(JSON.stringify({ message: "Unauthorized" }), {
-  //     status: 401,
-  //     headers: { "Content-Type": "application/json" },
-  //   });
-  // }
+  if (!session) {
+    return new Response(JSON.stringify({ message: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const { searchParams } = new URL(request.url);
@@ -78,12 +85,12 @@ export async function GET(request: Request) {
 
     const status = searchParams.get("status");
     if (status) {
-      whereCondition.status = status as Status;
+      whereCondition.status = capitalize(status) as Status;
     }
 
     const priority = searchParams.get("priority");
     if (priority) {
-      whereCondition.priority = priority as Priority;
+      whereCondition.priority = capitalize(priority) as Priority;
     }
 
     const assigned = searchParams.get("assigned");
