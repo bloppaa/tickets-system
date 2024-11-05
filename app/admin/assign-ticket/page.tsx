@@ -41,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState } from "react";
 
 type Ticket = {
   id: string;
@@ -157,30 +158,34 @@ export default function Page() {
     {
       accessorKey: "assignedTo",
       header: "Asignado a",
-      cell: ({ row }) => (
-        <Select
-          value={row.original.assignedTo || ""}
-          onValueChange={async (value) => {
-            try {
-              await updateTicketAssignment(row.original.id, value);
-              console.log(`Asignando ticket ${row.original.id} a ${value}`);
-            } catch (error) {
-              console.error("Error updating ticket assignment:", error);
-            }
-          }}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sin asignar" />
-          </SelectTrigger>
-          <SelectContent>
+      cell: ({ row }) => {
+        const [assignedTo, setAssignedTo] = useState(row.original.assignedTo || "");
+    
+        const handleValueChange = async (value: string) => {
+          try {
+            await updateTicketAssignment(row.original.id, value);
+            console.log(`Asignando ticket ${row.original.id} a ${value}`);
+            setAssignedTo(value);
+          } catch (error) {
+            console.error("Error updating ticket assignment:", error);
+          }
+        };
+    
+        return (
+          <Select value={assignedTo} onValueChange={handleValueChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sin asignar" />
+            </SelectTrigger>
+            <SelectContent>
             {users.map((user) => (
               <SelectItem key={user.id} value={user.id}>
                 {user.name}
               </SelectItem>
             ))}
           </SelectContent>
-        </Select>
-      ),
+          </Select>
+        );
+      },
     },
     {
       id: "actions",
