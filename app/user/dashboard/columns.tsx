@@ -39,6 +39,7 @@ export const columns: ColumnDef<Ticket>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="px-0"
         >
           Estado
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -53,6 +54,7 @@ export const columns: ColumnDef<Ticket>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="px-0"
         >
           Tipo
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -67,6 +69,7 @@ export const columns: ColumnDef<Ticket>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="px-0"
         >
           Prioridad
           <ArrowUpDown className="ml-2 h-4 w-4" />

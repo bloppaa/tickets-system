@@ -110,6 +110,11 @@ export async function GET(request: Request) {
       whereCondition.client = { rut: clientRut };
     }
 
+    const userId = searchParams.get("userId");
+    if (userId) {
+      whereCondition.userId = parseInt(userId);
+    }
+
     const tickets = await prisma.ticket.findMany({
       where: whereCondition,
       select: {
