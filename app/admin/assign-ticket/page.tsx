@@ -144,23 +144,63 @@ export default function Page() {
 
     {
       accessorKey: "type",
-      header: "Tipo",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Tipo
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => <div>{row.getValue("type")}</div>,
     },
-    
+
     {
       accessorKey: "status",
-      header: "Estado",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Estado
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => <div>{row.getValue("status")}</div>,
     },
     {
       accessorKey: "priority",
-      header: "Prioridad",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Prioridad
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => <div>{row.getValue("priority")}</div>,
     },
     {
       accessorKey: "createdAt",
-      header: "Fecha de creación",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Fecha de creación
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
     },
     {
