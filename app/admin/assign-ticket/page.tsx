@@ -289,7 +289,7 @@ export default function Page() {
   }
 
   return (
-    <div className="container mx-auto my-10">
+    <div className="container mx-auto my-10 px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-semibold mb-5">Asignación de tickets</h1>
       <div className="w-full">
         <div className="flex items-center py-4">
@@ -328,7 +328,7 @@ export default function Page() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
