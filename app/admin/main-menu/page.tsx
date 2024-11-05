@@ -5,14 +5,16 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { TicketIcon, BellIcon, RectangleStackIcon } from '@heroicons/react/24/outline'
+import { TicketIcon, BellIcon, RectangleStackIcon, UserIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline'
 
 export default function MainMenu() {
   const router = useRouter()
 
   const menuItems = [
-    { title: 'Crear Tickets', description: 'Crear tickets de soporte', icon: TicketIcon, href: '/client/create-ticket' },
-    { title: 'Mis tickets', description: 'Revisa el estado de tus ticket', icon: RectangleStackIcon, href: '/settings' },
+    { title: 'Crear Tickets', description: 'Crear tickets de soporte', icon: TicketIcon, href: '/admin/create-ticket' },
+    { title: 'Ver tickets', description: 'Revisa el estado de tus ticket', icon: RectangleStackIcon, href: '/settings' },
+    { title: 'Asignar tickets', description: '', icon: ClipboardDocumentCheckIcon, href: '/admin/assign-ticket' },
+    { title: 'Usuarios', description: 'Ver o crear usuario', icon: UserIcon, href: '/settings' },
     { title: 'Notificaciones', description: 'Gestionar notificaciones y alertas', icon: BellIcon, href: '/notifications' },
   ]
 
