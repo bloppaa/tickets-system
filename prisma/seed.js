@@ -5,7 +5,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { people } from "./data.js";
+import { people, tickets } from "./data.js";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
@@ -19,6 +19,18 @@ async function main() {
       where: { email: person.email },
       update: {},
       create: person,
+    });
+  }
+
+  for (const ticket of tickets) {
+    await prisma.ticket.create({
+      data: {
+        title: ticket.title,
+        description: ticket.description,
+        type: ticket.type,
+        priority: ticket.priority,
+        client: { connect: { id: ticket.id } },
+      },
     });
   }
 }

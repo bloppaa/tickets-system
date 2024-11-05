@@ -2,7 +2,7 @@ import { authOptions } from "@/auth";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import prisma from "@/lib/db";
-import { Priority, Type, Status } from "@prisma/client";
+import { Priority, Type, Status, Prisma } from "@prisma/client";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -12,6 +12,13 @@ export async function POST(request: Request) {
   if (!session) {
     return new Response(JSON.stringify({ message: "Unauthorized" }), {
       status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (session?.user.role !== "Client") {
+    return new Response(JSON.stringify({ message: "Forbidden" }), {
+      status: 403,
       headers: { "Content-Type": "application/json" },
     });
   }
@@ -62,7 +69,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -73,7 +80,38 @@ export async function GET() {
   }
 
   try {
+    const { searchParams } = new URL(request.url);
+    const whereCondition: Prisma.TicketWhereInput = {};
+
+    const status = searchParams.get("status");
+    if (status) {
+      whereCondition.status = capitalize(status) as Status;
+    }
+
+    const priority = searchParams.get("priority");
+    if (priority) {
+      whereCondition.priority = capitalize(priority) as Priority;
+    }
+
+    const type = searchParams.get("type");
+    if (type) {
+      whereCondition.type = capitalize(type) as Type;
+    }
+
+    const assigned = searchParams.get("assigned");
+    if (assigned === "false") {
+      whereCondition.userId = null;
+    } else if (assigned === "true") {
+      whereCondition.userId = { not: null };
+    }
+
+    const clientRut = searchParams.get("clientRut");
+    if (clientRut) {
+      whereCondition.client = { rut: clientRut };
+    }
+
     const tickets = await prisma.ticket.findMany({
+      where: whereCondition,
       select: {
         id: true,
         title: true,
@@ -81,71 +119,44 @@ export async function GET() {
         type: true,
         status: true,
         priority: true,
+        userId: true,
         createdAt: true,
         updatedAt: true,
+        client: {
+          select: { rut: true, name: true, email: true, companyRut: true },
+        },
       },
     });
 
     const translatedTickets = tickets.map((ticket) => {
-      let translatedPriority;
-      switch (ticket.priority) {
-        case Priority.Low:
-          translatedPriority = "Baja";
-          break;
-        case Priority.Medium:
-          translatedPriority = "Media";
-          break;
-        case Priority.High:
-          translatedPriority = "Alta";
-          break;
-        default:
-          translatedPriority = ticket.priority;
-      }
+      const translatedPriority =
+        {
+          [Priority.Low]: "Baja",
+          [Priority.Medium]: "Media",
+          [Priority.High]: "Alta",
+        }[ticket.priority] || ticket.priority;
 
-      let translatedType;
-      switch (ticket.type) {
-        case Type.Hardware:
-          translatedType = "Hardware";
-          break;
-        case Type.Software:
-          translatedType = "Software";
-          break;
-        case Type.Other:
-          translatedType = "Otro";
-          break;
-        default:
-          translatedType = ticket.type;
-      }
+      const translatedType =
+        {
+          [Type.Hardware]: "Hardware",
+          [Type.Software]: "Software",
+          [Type.Other]: "Otro",
+        }[ticket.type] || ticket.type;
 
-      let translatedStatus;
-      switch (ticket.status) {
-        case Status.Open:
-          translatedStatus = "Abierto";
-          break;
-        case Status.InProgress:
-          translatedStatus = "En progreso";
-          break;
-        case Status.Closed:
-          translatedStatus = "Cerrado";
-          break;
-        default:
-          translatedStatus = ticket.status;
-      }
-
-      const formattedCreatedAt = new Date(ticket.createdAt).toLocaleDateString(
-        "es-ES"
-      );
-      const formattedUpdatedAt = new Date(ticket.updatedAt).toLocaleDateString(
-        "es-ES"
-      );
+      const translatedStatus =
+        {
+          [Status.Open]: "Abierto",
+          [Status.InProgress]: "En progreso",
+          [Status.Closed]: "Cerrado",
+        }[ticket.status] || ticket.status;
 
       return {
         ...ticket,
         priority: translatedPriority,
         type: translatedType,
         status: translatedStatus,
-        createdAt: formattedCreatedAt,
-        updatedAt: formattedUpdatedAt,
+        createdAt: new Date(ticket.createdAt).toLocaleDateString("es-ES"),
+        updatedAt: new Date(ticket.updatedAt).toLocaleDateString("es-ES"),
       };
     });
 
