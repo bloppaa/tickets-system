@@ -2,7 +2,7 @@ import { authOptions } from "@/auth";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import prisma from "@/lib/db";
-import { Priority, Type, Status } from "@prisma/client";
+import { Priority, Type, Status, Prisma } from "@prisma/client";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -63,50 +63,43 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
 
-  if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  // if (!session) {
+  //   return new Response(JSON.stringify({ message: "Unauthorized" }), {
+  //     status: 401,
+  //     headers: { "Content-Type": "application/json" },
+  //   });
+  // }
 
   try {
-    const url = new URL(request.url);
-    const statusFilter = url.searchParams.get("status") || undefined;
-    const priorityFilter = url.searchParams.get("priority") || undefined;
-    const assignmentFilter = url.searchParams.get("filter") || undefined;
-    const codigo = url.searchParams.get("codigo");
-    const rutCliente = url.searchParams.get("rutCliente");
+    const { searchParams } = new URL(request.url);
+    const whereCondition: Prisma.TicketWhereInput = {};
 
-    // aca se construyen los filtros 
-    const filters: any = {};
-    if (statusFilter) {
-      filters.status = statusFilter as Status;
-    }
-    if (priorityFilter) {
-      filters.priority = priorityFilter as Priority;
-    }
-    if (assignmentFilter === "unassigned") {
-      filters.userId = null;
-    } else if (assignmentFilter === "assigned") {
-      filters.userId = { not: null };
-    }
-    if (codigo) {
-      filters.id = parseInt(codigo); // por id ticket 
-    }
-    if (rutCliente) {
-      filters.client = { rut: rutCliente }; // por rut cliente
+    const status = searchParams.get("status");
+    if (status) {
+      whereCondition.status = status as Status;
     }
 
-    // aca se obtienen los tickes ordenados 
+    const priority = searchParams.get("priority");
+    if (priority) {
+      whereCondition.priority = priority as Priority;
+    }
+
+    const assigned = searchParams.get("assigned");
+    if (assigned === "false") {
+      whereCondition.userId = null;
+    } else if (assigned === "true") {
+      whereCondition.userId = { not: null };
+    }
+
+    const clientRut = searchParams.get("clientRut");
+    if (clientRut) {
+      whereCondition.client = { rut: clientRut };
+    }
+
     const tickets = await prisma.ticket.findMany({
-      where: filters,
-      orderBy: [
-        { userId: 'asc' }, // Tickets sin asignar primero
-        { createdAt: 'desc' }, // Luego por fecha de creación
-      ],
+      where: whereCondition,
       select: {
         id: true,
         title: true,
@@ -117,28 +110,33 @@ export async function GET(request: Request) {
         userId: true,
         createdAt: true,
         updatedAt: true,
-        client: { select: { rut: true, name: true } }, // Información del cliente
+        client: {
+          select: { rut: true, name: true, email: true, companyRut: true },
+        },
       },
     });
 
     const translatedTickets = tickets.map((ticket) => {
-      const translatedPriority = {
-        [Priority.Low]: "Baja",
-        [Priority.Medium]: "Media",
-        [Priority.High]: "Alta",
-      }[ticket.priority] || ticket.priority;
+      const translatedPriority =
+        {
+          [Priority.Low]: "Baja",
+          [Priority.Medium]: "Media",
+          [Priority.High]: "Alta",
+        }[ticket.priority] || ticket.priority;
 
-      const translatedType = {
-        [Type.Hardware]: "Hardware",
-        [Type.Software]: "Software",
-        [Type.Other]: "Otro",
-      }[ticket.type] || ticket.type;
+      const translatedType =
+        {
+          [Type.Hardware]: "Hardware",
+          [Type.Software]: "Software",
+          [Type.Other]: "Otro",
+        }[ticket.type] || ticket.type;
 
-      const translatedStatus = {
-        [Status.Open]: "Abierto",
-        [Status.InProgress]: "En progreso",
-        [Status.Closed]: "Cerrado",
-      }[ticket.status] || ticket.status;
+      const translatedStatus =
+        {
+          [Status.Open]: "Abierto",
+          [Status.InProgress]: "En progreso",
+          [Status.Closed]: "Cerrado",
+        }[ticket.status] || ticket.status;
 
       return {
         ...ticket,
