@@ -46,6 +46,7 @@ import { useState } from "react";
 type Ticket = {
   id: string;
   title: string;
+  type: string;
   status: "Abierto" | "En progreso" | "Cerrado";
   priority: "Baja" | "Media" | "Alta";
   createdAt: string;
@@ -140,6 +141,13 @@ export default function Page() {
       },
       cell: ({ row }) => <div>{row.getValue("title")}</div>,
     },
+
+    {
+      accessorKey: "type",
+      header: "Tipo",
+      cell: ({ row }) => <div>{row.getValue("type")}</div>,
+    },
+    
     {
       accessorKey: "status",
       header: "Estado",
