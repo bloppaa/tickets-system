@@ -7,6 +7,23 @@ export default withAuth(
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", url.pathname);
 
+    if (!req.nextauth.token) {
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (req.nextUrl.pathname === "/") {
+      switch (req.nextauth.token.role) {
+        case "Admin":
+          return NextResponse.redirect(new URL("/admin", req.url));
+        case "User":
+          return NextResponse.redirect(new URL("/user", req.url));
+        case "Client":
+          return NextResponse.redirect(new URL("/client", req.url));
+        default:
+          return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+    }
+
     if (
       req.nextUrl.pathname.startsWith("/admin") &&
       req.nextauth.token?.role !== "Admin"

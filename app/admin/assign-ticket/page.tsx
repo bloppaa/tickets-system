@@ -41,7 +41,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
 
 type Ticket = {
   id: string;
@@ -207,30 +206,36 @@ export default function Page() {
       accessorKey: "assignedTo",
       header: "Asignado a",
       cell: ({ row }) => {
-        const [assignedTo, setAssignedTo] = useState(row.original.assignedTo || "");
-    
+        const assignedTo = row.original.assignedTo || "";
+
         const handleValueChange = async (value: string) => {
           try {
             await updateTicketAssignment(row.original.id, value);
             console.log(`Asignando ticket ${row.original.id} a ${value}`);
-            setAssignedTo(value);
+            setTickets((prevTickets) =>
+              prevTickets.map((ticket) =>
+                ticket.id === row.original.id
+                  ? { ...ticket, assignedTo: value }
+                  : ticket
+              )
+            );
           } catch (error) {
             console.error("Error updating ticket assignment:", error);
           }
         };
-    
+
         return (
           <Select value={assignedTo} onValueChange={handleValueChange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sin asignar" />
             </SelectTrigger>
             <SelectContent>
-            {users.map((user) => (
-              <SelectItem key={user.id} value={user.id}>
-                {user.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
+              {users.map((user) => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         );
       },
@@ -289,8 +294,10 @@ export default function Page() {
   }
 
   return (
-    <div className="container mx-auto my-10 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-semibold mb-5">Asignación de tickets</h1>
+    <div className="container mx-auto my-10 lg:px-8">
+      <h1 className="text-center md:text-left text-2xl font-semibold mb-5">
+        Asignación de tickets
+      </h1>
       <div className="w-full">
         <div className="flex items-center py-4">
           <Input
@@ -303,7 +310,7 @@ export default function Page() {
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
+              <Button variant="outline" className="ml-auto hidden md:flex">
                 Columnas <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
