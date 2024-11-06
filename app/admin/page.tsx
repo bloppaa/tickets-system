@@ -57,9 +57,6 @@ export default function MainMenu() {
 
   return (
     <div className="container mx-auto py-10 md:px-10">
-      <div className="flex justify-center mb-10">
-        <Image src="/brand.png" alt="Logo" width={411} height={150} />
-      </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {menuItems.map((item, index) => (
           <Card
