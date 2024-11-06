@@ -45,6 +45,7 @@ import {
 type Ticket = {
   id: string;
   title: string;
+  type: string;
   status: "Abierto" | "En progreso" | "Cerrado";
   priority: "Baja" | "Media" | "Alta";
   createdAt: string;
@@ -86,13 +87,34 @@ const updateTicketAssignment = async (ticketId: string, userId: string) => {
   }
 };
 
+const LoadingTable = () => (
+  <div className="w-full space-y-4">
+    <div className="flex items-center justify-between">
+      <div className="h-8 w-[200px] animate-pulse bg-gray-200 rounded" />
+      <div className="h-8 w-[200px] animate-pulse bg-gray-200 rounded" />
+    </div>
+    <div className="rounded-md border">
+      <div className="h-12 border-b bg-gray-50" />
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="h-16 border-b">
+          <div className="flex items-center space-x-4 p-4">
+            <div className="h-6 w-full animate-pulse bg-gray-200 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 export default function Page() {
   const [tickets, setTickets] = React.useState<Ticket[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
   const [error, setError] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const [ticketsData, usersData] = await Promise.all([
           fetchTickets(),
@@ -103,6 +125,8 @@ export default function Page() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         setError("Failed to load data");
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -119,7 +143,17 @@ export default function Page() {
   const columns: ColumnDef<Ticket>[] = [
     {
       accessorKey: "id",
-      header: "ID",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            ID
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => (
         <div className="font-medium">{row.getValue("id")}</div>
       ),
@@ -139,48 +173,105 @@ export default function Page() {
       },
       cell: ({ row }) => <div>{row.getValue("title")}</div>,
     },
+
+    {
+      accessorKey: "type",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Tipo
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div>{row.getValue("type")}</div>,
+    },
+
     {
       accessorKey: "status",
-      header: "Estado",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Estado
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => <div>{row.getValue("status")}</div>,
     },
     {
       accessorKey: "priority",
-      header: "Prioridad",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Prioridad
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => <div>{row.getValue("priority")}</div>,
     },
     {
       accessorKey: "createdAt",
-      header: "Fecha de creación",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Fecha de creación
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
     },
     {
       accessorKey: "assignedTo",
       header: "Asignado a",
-      cell: ({ row }) => (
-        <Select
-          value={row.original.assignedTo || ""}
-          onValueChange={async (value) => {
-            try {
-              await updateTicketAssignment(row.original.id, value);
-              console.log(`Asignando ticket ${row.original.id} a ${value}`);
-            } catch (error) {
-              console.error("Error updating ticket assignment:", error);
-            }
-          }}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sin asignar" />
-          </SelectTrigger>
-          <SelectContent>
-            {users.map((user) => (
-              <SelectItem key={user.id} value={user.id}>
-                {user.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ),
+      cell: ({ row }) => {
+        const assignedTo = row.original.assignedTo || "";
+
+        const handleValueChange = async (value: string) => {
+          try {
+            await updateTicketAssignment(row.original.id, value);
+            console.log(`Asignando ticket ${row.original.id} a ${value}`);
+            setTickets((prevTickets) =>
+              prevTickets.map((ticket) =>
+                ticket.id === row.original.id
+                  ? { ...ticket, assignedTo: value }
+                  : ticket
+              )
+            );
+          } catch (error) {
+            console.error("Error updating ticket assignment:", error);
+          }
+        };
+
+        return (
+          <Select value={assignedTo} onValueChange={handleValueChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sin asignar" />
+            </SelectTrigger>
+            <SelectContent>
+              {users.map((user) => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      },
     },
     {
       id: "actions",
@@ -236,120 +327,131 @@ export default function Page() {
   }
 
   return (
-    <div className="container mx-auto my-10">
-      <h1 className="text-2xl font-semibold mb-5">Asignación de tickets</h1>
-      <div className="w-full">
-        <div className="flex items-center py-4">
-          <Input
-            placeholder="Filtrar tickets..."
-            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("title")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columnas <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
+    <div className="container mx-auto my-10 lg:px-8">
+      {loading ? (
+        <LoadingTable />
+      ) : (
+        <div>
+          <h1 className="text-center md:text-left text-2xl font-semibold mb-5">
+            Asignación de tickets
+          </h1>
+          <div className="w-full">
+            <div className="flex items-center py-4">
+              <Input
+                placeholder="Filtrar tickets..."
+                value={
+                  (table.getColumn("title")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("title")?.setFilterValue(event.target.value)
+                }
+                className="max-w-sm"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="ml-auto hidden md:flex">
+                    Columnas <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={column.id}
+                          className="capitalize"
+                          checked={column.getIsVisible()}
+                          onCheckedChange={(value) =>
+                            column.toggleVisibility(!!value)
+                          }
+                        >
+                          {column.id}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="rounded-md border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
                             )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        No se encontraron resultados.
                       </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No se encontraron resultados.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} de{" "}
-            {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
-          </div>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Anterior
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Siguiente
-            </Button>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex items-center justify-end space-x-2 py-4">
+              <div className="flex-1 text-sm text-muted-foreground">
+                {table.getFilteredSelectedRowModel().rows.length} de{" "}
+                {table.getFilteredRowModel().rows.length} fila(s)
+                seleccionada(s).
+              </div>
+              <div className="space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
