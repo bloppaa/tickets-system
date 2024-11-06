@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/card";
 import {
   TicketIcon,
-  BellIcon,
   RectangleStackIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
 export default function MainMenu() {
@@ -22,21 +22,21 @@ export default function MainMenu() {
 
   const menuItems = [
     {
-      title: "Crear tickets",
+      title: "Crear ticket",
       description: "Crea un nuevo ticket de soporte",
       icon: TicketIcon,
       href: "/client/create-ticket",
     },
     {
       title: "Mis tickets",
-      description: "Revisa el estado de tus ticket",
+      description: "Revisa el estado de tus tickets",
       icon: RectangleStackIcon,
       href: "",
     },
     {
-      title: "Notificaciones",
-      description: "Gestiona notificaciones y correos electrónicos",
-      icon: BellIcon,
+      title: "Preferencias de la cuenta",
+      description: "Configura las preferencias de tu cuenta",
+      icon: Cog6ToothIcon,
       href: "",
     },
   ];

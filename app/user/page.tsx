@@ -11,41 +11,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  TicketIcon,
-  RectangleStackIcon,
-  UserIcon,
-  ClipboardDocumentCheckIcon,
-  Cog6ToothIcon,
-} from "@heroicons/react/24/outline";
+import { RectangleStackIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 
 export default function MainMenu() {
   const router = useRouter();
 
   const menuItems = [
     {
-      title: "Crear tickets",
-      description: "Crea tickets de soporte para tus clientes",
-      icon: TicketIcon,
-      href: "",
-    },
-    {
       title: "Ver tickets",
-      description: "Obtén un resumen de los tickets creados",
+      description: "Ve los tickets de soporte que tienes asignados",
       icon: RectangleStackIcon,
-      href: "",
-    },
-    {
-      title: "Asignar tickets",
-      description: "Asigna tickets a los usuarios",
-      icon: ClipboardDocumentCheckIcon,
-      href: "/admin/assign-ticket",
-    },
-    {
-      title: "Usuarios",
-      description: "Gestiona los usuarios del sistema",
-      icon: UserIcon,
-      href: "",
+      href: "user/dashboard",
     },
     {
       title: "Preferencias de la cuenta",

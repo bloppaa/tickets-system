@@ -12,6 +12,21 @@ export const people = [
     role: "Admin",
   },
   {
+    name: "John Doe",
+    email: "client@client.com",
+    rut: "22.222.222-2",
+    companyRut: "33.333.333-3",
+    password: "client",
+    role: "Client",
+  },
+  {
+    name: "Jane Doe",
+    email: "user@user.com",
+    rut: "44.444.444-4",
+    password: "user",
+    role: "User",
+  },
+  {
     name: "Tandie",
     email: "temma0@salon.com",
     rut: "14.675.166-K",
