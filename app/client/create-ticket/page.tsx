@@ -23,6 +23,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 
+import { translations } from "@/prisma/translations";
+
 const CreateTicketPage = () => {
   const router = useRouter();
 
@@ -82,9 +84,11 @@ const CreateTicketPage = () => {
                     <SelectValue placeholder="Selecciona el tipo de problema" />
                   </SelectTrigger>
                   <SelectContent position="popper">
-                    <SelectItem value="hardware">Hardware</SelectItem>
-                    <SelectItem value="software">Software</SelectItem>
-                    <SelectItem value="other">Otro</SelectItem>
+                    {Object.entries(translations.type).map(([key, value]) => (
+                      <SelectItem key={key} value={key}>
+                        {value}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -95,9 +99,13 @@ const CreateTicketPage = () => {
                     <SelectValue placeholder="Selecciona la prioridad" />
                   </SelectTrigger>
                   <SelectContent position="popper">
-                    <SelectItem value="low">Baja</SelectItem>
-                    <SelectItem value="medium">Media</SelectItem>
-                    <SelectItem value="high">Alta</SelectItem>
+                    {Object.entries(translations.priority).map(
+                      ([key, value]) => (
+                        <SelectItem key={key} value={key}>
+                          {value}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
