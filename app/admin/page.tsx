@@ -45,7 +45,7 @@ export default function MainMenu() {
       title: "Usuarios",
       description: "Gestiona los usuarios del sistema",
       icon: UserIcon,
-      href: "",
+      href: "/admin/create-user",
     },
     {
       title: "Preferencias de la cuenta",
