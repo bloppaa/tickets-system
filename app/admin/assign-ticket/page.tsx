@@ -104,7 +104,6 @@ export default function Page() {
         ]);
         setTickets(ticketsData);
         setUsers(usersData);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         setError("Failed to load data");
       } finally {
@@ -155,7 +154,6 @@ export default function Page() {
       },
       cell: ({ row }) => <div>{row.getValue("title")}</div>,
     },
-
     {
       accessorKey: "type",
       header: ({ column }) => {
@@ -171,7 +169,6 @@ export default function Page() {
       },
       cell: ({ row }) => <div>{row.getValue("type")}</div>,
     },
-
     {
       accessorKey: "status",
       header: ({ column }) => {
@@ -223,14 +220,23 @@ export default function Page() {
       cell: ({ row }) => {
         const assignedTo = row.original.assignedTo || "";
 
-        const handleValueChange = async (value: string) => {
+        const handleValueChange = async (userId: string) => {
+          const user = users.find((u) => u.id === userId);
+          const userName = user ? user.name : "este usuario";
+
+          const confirmation = window.confirm(
+            `¿Estás seguro de que deseas asignar este ticket a ${userName}?`
+          );
+
+          if (!confirmation) return;
+
           try {
-            await updateTicketAssignment(row.original.id, value);
-            console.log(`Asignando ticket ${row.original.id} a ${value}`);
+            await updateTicketAssignment(row.original.id, userId);
+            console.log(`Asignando ticket ${row.original.id} a ${userName}`);
             setTickets((prevTickets) =>
               prevTickets.map((ticket) =>
                 ticket.id === row.original.id
-                  ? { ...ticket, assignedTo: value }
+                  ? { ...ticket, assignedTo: userId }
                   : ticket
               )
             );
@@ -304,135 +310,66 @@ export default function Page() {
     },
   });
 
-  if (error) {
-    return <div>{error}</div>;
-  }
-
   return (
-    <div className="container mx-auto my-10 md:px-10">
+    <div>
+      {error && <p className="text-red-500">{error}</p>}
       {loading ? (
         <LoadingTable />
       ) : (
-        <div>
-          <h1 className="text-center md:text-left text-2xl font-semibold mb-5">
-            Asignación de tickets
-          </h1>
-          <div className="w-full">
-            <div className="flex items-center py-4">
-              <Input
-                placeholder="Filtrar tickets..."
-                value={
-                  (table.getColumn("title")?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table.getColumn("title")?.setFilterValue(event.target.value)
-                }
-                className="max-w-sm"
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="ml-auto hidden md:flex">
-                    Columnas <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {table
-                    .getAllColumns()
-                    .filter((column) => column.getCanHide())
-                    .map((column) => {
-                      return (
-                        <DropdownMenuCheckboxItem
-                          key={column.id}
-                          className="capitalize"
-                          checked={column.getIsVisible()}
-                          onCheckedChange={(value) =>
-                            column.toggleVisibility(!!value)
-                          }
-                        >
-                          {column.id}
-                        </DropdownMenuCheckboxItem>
-                      );
-                    })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <div className="rounded-md border overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </TableHead>
-                        );
-                      })}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && "selected"}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                      >
-                        No se encontraron resultados.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-              <div className="flex-1 text-sm text-muted-foreground">
-                {table.getFilteredSelectedRowModel().rows.length} de{" "}
-                {table.getFilteredRowModel().rows.length} fila(s)
-                seleccionada(s).
-              </div>
-              <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
+        <>
+          <div className="flex items-center py-4">
+            <Input
+              placeholder="Filtrar tickets..."
+              value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+              onChange={(event) =>
+                table.getColumn("title")?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
           </div>
-        </div>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      No hay resultados.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
     </div>
   );
