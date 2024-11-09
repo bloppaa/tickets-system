@@ -41,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LoadingTable } from "@/components/loading-table";
 
 type Ticket = {
   id: string;
@@ -86,25 +87,6 @@ const updateTicketAssignment = async (ticketId: string, userId: string) => {
     throw new Error("Failed to update ticket assignment");
   }
 };
-
-const LoadingTable = () => (
-  <div className="w-full space-y-4">
-    <div className="flex items-center justify-between">
-      <div className="h-8 w-[200px] animate-pulse bg-gray-200 rounded" />
-      <div className="h-8 w-[200px] animate-pulse bg-gray-200 rounded" />
-    </div>
-    <div className="rounded-md border">
-      <div className="h-12 border-b bg-gray-50" />
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="h-16 border-b">
-          <div className="flex items-center space-x-4 p-4">
-            <div className="h-6 w-full animate-pulse bg-gray-200 rounded" />
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
 
 export default function Page() {
   const [tickets, setTickets] = React.useState<Ticket[]>([]);
@@ -327,7 +309,7 @@ export default function Page() {
   }
 
   return (
-    <div className="container mx-auto my-10 lg:px-8">
+    <div className="container mx-auto my-10 md:px-10">
       {loading ? (
         <LoadingTable />
       ) : (

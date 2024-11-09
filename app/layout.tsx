@@ -9,7 +9,7 @@ const geistSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Sisteme de Tickets de Soporte",
+  title: "Sistema de Tickets de Soporte",
 };
 
 export default function RootLayout({
