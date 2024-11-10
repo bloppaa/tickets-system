@@ -18,9 +18,9 @@ export type Ticket = {
   createdAt: string;
   updatedAt: string;
   title: string;
-  status: "Abierto" | "En progreso" | "Cerrado";
-  type: "Hardware" | "Software" | "Otros";
-  priority: "Baja" | "Media" | "Alta";
+  status: string;
+  type: string;
+  priority: string;
 };
 
 export const columns: ColumnDef<Ticket>[] = [

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import prisma from "@/lib/db";
 import { Priority, Type, Status, Prisma } from "@prisma/client";
+import { translations } from "@/prisma/translations";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -29,8 +30,10 @@ export async function POST(request: Request) {
     const ticketSchema = z.object({
       title: z.string().min(1, "Title is required"),
       description: z.string().min(1, "Description is required"),
-      type: z.enum(["hardware", "software", "other"]),
-      priority: z.enum(["low", "medium", "high"]),
+      type: z.enum(Object.keys(translations.type) as [string, ...string[]]),
+      priority: z.enum(
+        Object.keys(translations.priority) as [string, ...string[]]
+      ),
     });
 
     const parsedBody = ticketSchema.safeParse(body);
@@ -134,32 +137,11 @@ export async function GET(request: Request) {
     });
 
     const translatedTickets = tickets.map((ticket) => {
-      const translatedPriority =
-        {
-          [Priority.Low]: "Baja",
-          [Priority.Medium]: "Media",
-          [Priority.High]: "Alta",
-        }[ticket.priority] || ticket.priority;
-
-      const translatedType =
-        {
-          [Type.Hardware]: "Hardware",
-          [Type.Software]: "Software",
-          [Type.Other]: "Otro",
-        }[ticket.type] || ticket.type;
-
-      const translatedStatus =
-        {
-          [Status.Open]: "Abierto",
-          [Status.InProgress]: "En progreso",
-          [Status.Closed]: "Cerrado",
-        }[ticket.status] || ticket.status;
-
       return {
         ...ticket,
-        priority: translatedPriority,
-        type: translatedType,
-        status: translatedStatus,
+        priority: translations.priority[ticket.priority],
+        type: translations.type[ticket.type],
+        status: translations.status[ticket.status],
         createdAt: new Date(ticket.createdAt).toLocaleDateString("es-ES"),
         updatedAt: new Date(ticket.updatedAt).toLocaleDateString("es-ES"),
       };
