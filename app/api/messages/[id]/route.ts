@@ -2,9 +2,6 @@ import { authOptions } from "@/auth";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import prisma from "@/lib/db";
-import { Priority, Type, Status, Prisma } from "@prisma/client";
-import { translations } from "@/prisma/translations";
-import { log } from "console";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -70,82 +67,77 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
-  const session = await getServerSession(authOptions);
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  // const session = await getServerSession(authOptions);
 
-  if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  // if (!session) {
+  //   return new Response(JSON.stringify({ message: "Unauthorized" }), {
+  //     status: 401,
+  //     headers: { "Content-Type": "application/json" },
+  //   });
+  // }
+
+  // if (session?.user.role !== "Client" && session?.user.role !== "User") {
+  //   return new Response(JSON.stringify({ message: "Forbidden" }), {
+  //     status: 403,
+  //     headers: { "Content-Type": "application/json" },
+  //   });
+  // }
 
   try {
-    const { searchParams } = new URL(request.url);
-    const whereCondition: Prisma.TicketWhereInput = {};
+    const ticketId = parseInt(params.id);
 
-    const status = searchParams.get("status");
-    if (status) {
-      whereCondition.status = capitalize(status) as Status;
-    }
-
-    const priority = searchParams.get("priority");
-    if (priority) {
-      whereCondition.priority = capitalize(priority) as Priority;
-    }
-
-    const type = searchParams.get("type");
-    if (type) {
-      whereCondition.type = capitalize(type) as Type;
-    }
-
-    const assigned = searchParams.get("assigned");
-    if (assigned === "false") {
-      whereCondition.userId = null;
-    } else if (assigned === "true") {
-      whereCondition.userId = { not: null };
-    }
-
-    const clientRut = searchParams.get("clientRut");
-    if (clientRut) {
-      whereCondition.client = { rut: clientRut };
-    }
-
-    const userId = searchParams.get("userId");
-    if (userId) {
-      whereCondition.userId = parseInt(userId);
-    }
-
-    const tickets = await prisma.ticket.findMany({
-      where: whereCondition,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        type: true,
-        status: true,
-        priority: true,
-        userId: true,
-        createdAt: true,
-        updatedAt: true,
-        client: {
-          select: { rut: true, name: true, email: true, companyRut: true },
-        },
-      },
+    const ticketSchema = z.object({
+      ticketId: z.number().positive("Ticket ID is required"),
     });
 
-    const translatedTickets = tickets.map((ticket) => {
+    const parsedTicket = ticketSchema.safeParse({ ticketId });
+
+    if (!parsedTicket.success) {
+      return new Response(JSON.stringify(parsedTicket.error.errors), {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
+
+    const messages = await prisma.message.findMany({
+      where: { ticketId: parsedTicket.data.ticketId },
+      select: {
+        id: true,
+        content: true,
+        person: { select: { name: true } },
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const formattedMessages = messages.map((message) => {
       return {
-        ...ticket,
-        priority: translations.priority[ticket.priority],
-        type: translations.type[ticket.type],
-        status: translations.status[ticket.status],
-        createdAt: new Date(ticket.createdAt).toLocaleDateString("es-ES"),
-        updatedAt: new Date(ticket.updatedAt).toLocaleDateString("es-ES"),
+        ...message,
+        createdAt: new Date(message.createdAt).toLocaleString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        updatedAt: new Date(message.updatedAt).toLocaleString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
     });
 
-    return new Response(JSON.stringify(translatedTickets), {
+    return new Response(JSON.stringify(formattedMessages), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

@@ -12,11 +12,19 @@ type TicketMessageProps = {
     id: number;
     person: {
       name: string;
-      avatar: string | undefined;
     };
     content: string;
-    timestamp: string;
+    createdAt: string;
   }[];
+};
+
+export type TicketMessage = {
+  id: number;
+  person: {
+    name: string;
+  };
+  content: string;
+  createdAt: string;
 };
 
 export default function TicketMessages(props: TicketMessageProps) {
@@ -31,13 +39,20 @@ export default function TicketMessages(props: TicketMessageProps) {
         throw new Error("Unauthorized");
       }
 
-      await fetch(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newMessage),
-      });
+      const ticketId = window.location.pathname.split("/").pop();
+
+      await fetch(
+        `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/messages/${ticketId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newMessage),
+        }
+      );
+      setNewMessage("");
+      window.location.reload();
     } catch (error) {
       console.error("Error sending message");
     }
@@ -53,10 +68,7 @@ export default function TicketMessages(props: TicketMessageProps) {
           {props.messages.map((message) => (
             <div key={message.id} className="flex space-x-3">
               <Avatar>
-                <AvatarImage
-                  src={message.person.avatar ?? ""}
-                  alt={message.person.name}
-                />
+                <AvatarImage src={""} alt={message.person.name} />
                 <AvatarFallback>
                   {message.person.name
                     .split(" ")
@@ -70,7 +82,7 @@ export default function TicketMessages(props: TicketMessageProps) {
                     {message.person.name}
                   </h4>
                   <span className="text-xs text-muted-foreground">
-                    {message.timestamp}
+                    {message.createdAt}
                   </span>
                 </div>
                 <p className="mt-1 text-sm">{message.content}</p>
