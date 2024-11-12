@@ -20,6 +20,28 @@ async function getTicket(params: {
   return await (await res.GET(request, params)).json();
 }
 
+const initialMessages = [
+  {
+    id: 1,
+    person: {
+      name: "John Doe",
+      avatar: "",
+    },
+    content:
+      "Hello, I'm having trouble with my account. Can you help me with this?",
+    timestamp: "2 hours ago",
+  },
+  {
+    id: 2,
+    person: {
+      name: "Jane Doe",
+      avatar: "",
+    },
+    content: "Sure! I'd be happy to help you with that.",
+    timestamp: "1 hour ago",
+  },
+];
+
 export default async function TicketView({
   params,
 }: {
@@ -29,9 +51,9 @@ export default async function TicketView({
   const ticketData = await getTicket({ params: { id } });
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="container mx-auto py-4 md:px-10 space-y-6">
       <TicketInfo data={ticketData} />
-      {/* <TicketMessages messages={initialMessages} /> */}
+      <TicketMessages messages={initialMessages} />
     </div>
   );
 }

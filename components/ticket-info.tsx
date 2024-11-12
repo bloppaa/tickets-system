@@ -65,10 +65,7 @@ export default function TicketInfo(props: TicketInfoProps) {
               <div className="flex items-center space-x-2">
                 <Avatar>
                   <AvatarImage
-                    src={
-                      props.data.client.avatar ??
-                      "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-                    }
+                    src={props.data.client.avatar ?? ""}
                     alt={props.data.client.name}
                   />
                   <AvatarFallback>
@@ -91,10 +88,7 @@ export default function TicketInfo(props: TicketInfoProps) {
               <div className="flex items-center space-x-2">
                 <Avatar>
                   <AvatarImage
-                    src={
-                      props.data.user.avatar ??
-                      "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-                    }
+                    src={props.data.user.avatar ?? ""}
                     alt={props.data.user.name}
                   />
                   <AvatarFallback>

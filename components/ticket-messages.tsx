@@ -5,13 +5,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
+import { useSession } from "next-auth/react";
 
 type TicketMessageProps = {
   messages: {
     id: number;
     person: {
       name: string;
-      avatar: string;
+      avatar: string | undefined;
     };
     content: string;
     timestamp: string;
@@ -21,21 +22,36 @@ type TicketMessageProps = {
 export default function TicketMessages(props: TicketMessageProps) {
   const [messages, setMessages] = useState(props.messages);
   const [newMessage, setNewMessage] = useState("");
+  const { data: session } = useSession();
 
-  const handleSendMessage = () => {};
+  const handleSendMessage = () => {
+    if (newMessage.trim() && session?.user) {
+      const message = {
+        id: messages.length + 1,
+        person: {
+          name: session.user.name || "",
+          avatar: session.user.image || "",
+        },
+        content: newMessage,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([...messages, message]);
+      setNewMessage("");
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Messages</CardTitle>
+        <CardTitle>Mensajes</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {props.messages.map((message) => (
+          {messages.map((message) => (
             <div key={message.id} className="flex space-x-3">
               <Avatar>
                 <AvatarImage
-                  src={message.person.avatar}
+                  src={message.person.avatar ?? ""}
                   alt={message.person.name}
                 />
                 <AvatarFallback>
@@ -61,12 +77,12 @@ export default function TicketMessages(props: TicketMessageProps) {
         </div>
         <div className="mt-4 flex space-x-2">
           <Input
-            placeholder="Type your message here..."
+            placeholder="Escribe tu mensaje aquí..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
           />
-          <Button onClick={handleSendMessage}>Send</Button>
+          <Button onClick={handleSendMessage}>Enviar</Button>
         </div>
       </CardContent>
     </Card>
