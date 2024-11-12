@@ -22,20 +22,30 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 
 const CreateTicketPage = () => {
   const router = useRouter();
+  const { handleSubmit } = useForm();
+  const [clientError, setClientError] = React.useState<string | null>(null);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  const onSubmit = handleSubmit(async (data) => {
+    setClientError(null);
 
     const ticketData = {
-      title: formData.get("title") as string,
-      type: formData.get("type") as string,
-      priority: formData.get("priority") as string,
-      description: formData.get("description") as string,
+      rut: data.clientRut,
+      title: data.title,
+      type: data.type,
+      priority: data.priority,
+      description: data.description,
     };
+
+    const clientResponse = await fetch(`/api/clients?rut=${ticketData.rut}`);
+
+    if (clientResponse.status === 404) {
+      setClientError("No se encontró un cliente con ese RUT");
+      return;
+    }
 
     const response = await fetch("/api/tickets", {
       method: "POST",
@@ -52,11 +62,11 @@ const CreateTicketPage = () => {
       alert(result.message);
     }
     router.push("/");
-  };
+  });
 
   return (
     <div className="container mx-auto md:px-10 py-10 flex justify-center">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
         <Card className="w-full max-w-xl">
           <CardHeader>
             <CardTitle className="text-xl">Crear ticket de soporte</CardTitle>
@@ -73,6 +83,9 @@ const CreateTicketPage = () => {
                   name="clientRut"
                   placeholder="12345678-9"
                 />
+                {clientError && (
+                  <span className="text-red-500 text-xs">{clientError}</span>
+                )}
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="title">Título</Label>

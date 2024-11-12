@@ -40,6 +40,13 @@ export async function GET(request: Request) {
       },
     });
 
+    if (clients.length === 0) {
+      return new Response(
+        JSON.stringify({ message: "No se encontraron clientes" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(JSON.stringify(clients), {
       status: 200,
       headers: { "Content-Type": "application/json" },
