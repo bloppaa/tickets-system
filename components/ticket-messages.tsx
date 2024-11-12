@@ -24,19 +24,27 @@ export default function TicketMessages(props: TicketMessageProps) {
   const [newMessage, setNewMessage] = useState("");
   const { data: session } = useSession();
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() && session?.user) {
-      const message = {
-        id: messages.length + 1,
-        person: {
-          name: session.user.name || "",
-          avatar: session.user.image || "",
-        },
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      if (!session) {
+        throw new Error("Unauthorized");
+      }
+
+      const messageBody = {
         content: newMessage,
-        timestamp: new Date().toISOString(),
       };
-      setMessages([...messages, message]);
-      setNewMessage("");
+
+      await fetch(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(messageBody),
+      });
+    } catch (error) {
+      console.error("Error sending message");
     }
   };
 
@@ -75,15 +83,14 @@ export default function TicketMessages(props: TicketMessageProps) {
             </div>
           ))}
         </div>
-        <div className="mt-4 flex space-x-2">
+        <form onSubmit={handleSubmit} className="mt-4 flex space-x-2">
           <Input
             placeholder="Escribe tu mensaje aquí..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
           />
-          <Button onClick={handleSendMessage}>Enviar</Button>
-        </div>
+          <Button type="submit">Enviar</Button>
+        </form>
       </CardContent>
     </Card>
   );
