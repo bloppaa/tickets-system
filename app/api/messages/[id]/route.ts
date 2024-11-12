@@ -71,21 +71,21 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  // const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
 
-  // if (!session) {
-  //   return new Response(JSON.stringify({ message: "Unauthorized" }), {
-  //     status: 401,
-  //     headers: { "Content-Type": "application/json" },
-  //   });
-  // }
+  if (!session) {
+    return new Response(JSON.stringify({ message: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-  // if (session?.user.role !== "Client" && session?.user.role !== "User") {
-  //   return new Response(JSON.stringify({ message: "Forbidden" }), {
-  //     status: 403,
-  //     headers: { "Content-Type": "application/json" },
-  //   });
-  // }
+  if (session?.user.role !== "Client" && session?.user.role !== "User") {
+    return new Response(JSON.stringify({ message: "Forbidden" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const ticketId = parseInt(params.id);
