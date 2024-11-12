@@ -85,9 +85,8 @@ export const columns: ColumnDef<Ticket>[] = [
               Copiar ID de ticket
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Ver cliente</DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href={`/user/ticket/${payment.id}`}>Ver ticket</Link>
+              <Link href={`/client/ticket/${payment.id}`}>Ver ticket</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

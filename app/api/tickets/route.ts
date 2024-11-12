@@ -84,39 +84,8 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const whereCondition: Prisma.TicketWhereInput = {};
-
-    const status = searchParams.get("status");
-    if (status) {
-      whereCondition.status = capitalize(status) as Status;
-    }
-
-    const priority = searchParams.get("priority");
-    if (priority) {
-      whereCondition.priority = capitalize(priority) as Priority;
-    }
-
-    const type = searchParams.get("type");
-    if (type) {
-      whereCondition.type = capitalize(type) as Type;
-    }
-
-    const assigned = searchParams.get("assigned");
-    if (assigned === "false") {
-      whereCondition.userId = null;
-    } else if (assigned === "true") {
-      whereCondition.userId = { not: null };
-    }
-
-    const clientRut = searchParams.get("clientRut");
-    if (clientRut) {
-      whereCondition.client = { rut: clientRut };
-    }
-
-    const userId = searchParams.get("userId");
-    if (userId) {
-      whereCondition.userId = parseInt(userId);
-    }
+    const whereCondition: Prisma.TicketWhereInput =
+      buildWhereCondition(searchParams);
 
     const tickets = await prisma.ticket.findMany({
       where: whereCondition,
@@ -127,12 +96,10 @@ export async function GET(request: Request) {
         type: true,
         status: true,
         priority: true,
-        userId: true,
         createdAt: true,
         updatedAt: true,
-        client: {
-          select: { rut: true, name: true, email: true, companyRut: true },
-        },
+        client: { select: { name: true, email: true } },
+        user: { select: { name: true, email: true } },
       },
     });
 
@@ -142,8 +109,20 @@ export async function GET(request: Request) {
         priority: translations.priority[ticket.priority],
         type: translations.type[ticket.type],
         status: translations.status[ticket.status],
-        createdAt: new Date(ticket.createdAt).toLocaleDateString("es-ES"),
-        updatedAt: new Date(ticket.updatedAt).toLocaleDateString("es-ES"),
+        createdAt: new Date(ticket.createdAt).toLocaleString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        updatedAt: new Date(ticket.updatedAt).toLocaleString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
     });
 
@@ -158,4 +137,42 @@ export async function GET(request: Request) {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+}
+
+function buildWhereCondition(searchParams: URLSearchParams) {
+  const whereCondition: Prisma.TicketWhereInput = {};
+
+  const status = searchParams.get("status")?.toLowerCase();
+  if (status) {
+    whereCondition.status = capitalize(status) as Status;
+  }
+
+  const priority = searchParams.get("priority")?.toLowerCase();
+  if (priority) {
+    whereCondition.priority = capitalize(priority) as Priority;
+  }
+
+  const type = searchParams.get("type")?.toLowerCase();
+  if (type) {
+    whereCondition.type = capitalize(type) as Type;
+  }
+
+  const assigned = searchParams.get("assigned")?.toLowerCase();
+  if (assigned === "false") {
+    whereCondition.userId = null;
+  } else if (assigned === "true") {
+    whereCondition.userId = { not: null };
+  }
+
+  const clientId = searchParams.get("clientId");
+  if (clientId) {
+    whereCondition.clientId = parseInt(clientId);
+  }
+
+  const userId = searchParams.get("userId");
+  if (userId) {
+    whereCondition.userId = parseInt(userId);
+  }
+
+  return whereCondition;
 }

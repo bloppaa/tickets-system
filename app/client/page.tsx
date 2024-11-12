@@ -30,7 +30,7 @@ export default function MainMenu() {
       title: "Mis tickets",
       description: "Revisa el estado de tus tickets",
       icon: RectangleStackIcon,
-      href: "",
+      href: "/client/mis-tickets",
     },
     {
       title: "Preferencias de la cuenta",
