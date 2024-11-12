@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     });
   }
 
-  if (session?.user.role !== "Client") {
+  if (session?.user.role !== "Client" && session?.user.role !== "Admin") {
     return new Response(JSON.stringify({ message: "Forbidden" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
@@ -48,6 +48,10 @@ export async function POST(request: Request) {
     }
 
     const { title, description, type, priority } = parsedBody.data;
+    const { searchParams } = new URL(request.url);
+    const clientId =
+      parseInt(searchParams.get("clientRut") as string) ||
+      parseInt(session.user.id as string);
 
     await prisma.ticket.create({
       data: {
@@ -55,7 +59,7 @@ export async function POST(request: Request) {
         description,
         type: capitalize(type) as Type,
         priority: capitalize(priority) as Priority,
-        client: { connect: { id: parseInt(session.user.id as string) } },
+        client: { connect: { id: clientId } },
       },
     });
 
