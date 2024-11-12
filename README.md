@@ -2,9 +2,9 @@
 
 Los puntos marcados con `!` son urgentes (próximo sprint), mientras que los marcados con `?` son opcionales (aunque deberían implementarse).
 
-- `!` ~Si existe una sesión y se intenta acceder a la página de login, debería redireccionar a la página principal. Asimismo, si se intenta acceder a alguna URL de manera manual y no existe sesión, debería redireccionar a la página que se intentaba acceder y no a la página principal.~
-- `!` ~No existe una navbar o algún tipo de navegación por el momento. Aplicar antes del hito intermedio.~
-- `?` ~Cuando carga alguna página que requiere de datos antes de mostrar la interfaz, simplemente aparece un mensaje diciendo Loading.... Debería cambiarse a un spinner o un esqueleto (ojalá).~
+- `!` En la vista de ticket por parte del usuario, aún no se puede cambiar el estado del ticket.
+- `!` No se por qué las rutas están en inglés pero deberían estar en español.
+- `?` ~Cuando carga alguna página que requiere de datos antes de mostrar la interfaz, simplemente aparece un mensaje diciendo Loading.... Debería cambiarse a un spinner o un esqueleto (ojalá).~ (Está implementado sólo en algunas partes)
 
 # Configuración
 
