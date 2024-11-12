@@ -55,18 +55,25 @@ const CreateTicketPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="container mx-auto md:px-10 py-10 flex justify-center">
       <form onSubmit={handleSubmit}>
         <Card className="w-full max-w-xl">
           <CardHeader>
             <CardTitle className="text-xl">Crear ticket de soporte</CardTitle>
             <CardDescription>
-              Por favor, proporciona los detalles de tu problema para que
-              podamos ayudarte mejor.
+              Por favor, proporciona los detalles del problema del cliente.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="title">RUT del cliente</Label>
+                <Input
+                  id="clientRut"
+                  name="clientRut"
+                  placeholder="12345678-9"
+                />
+              </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="title">Título</Label>
                 <Input
@@ -106,7 +113,7 @@ const CreateTicketPage = () => {
                 <Textarea
                   id="description"
                   name="description"
-                  placeholder="Describe tu problema en detalle"
+                  placeholder="Describe el problema en detalle"
                   required
                 />
               </div>
