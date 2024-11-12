@@ -20,7 +20,6 @@ type TicketMessageProps = {
 };
 
 export default function TicketMessages(props: TicketMessageProps) {
-  const [messages, setMessages] = useState(props.messages);
   const [newMessage, setNewMessage] = useState("");
   const { data: session } = useSession();
 
@@ -32,16 +31,12 @@ export default function TicketMessages(props: TicketMessageProps) {
         throw new Error("Unauthorized");
       }
 
-      const messageBody = {
-        content: newMessage,
-      };
-
       await fetch(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(messageBody),
+        body: JSON.stringify(newMessage),
       });
     } catch (error) {
       console.error("Error sending message");
@@ -55,7 +50,7 @@ export default function TicketMessages(props: TicketMessageProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {messages.map((message) => (
+          {props.messages.map((message) => (
             <div key={message.id} className="flex space-x-3">
               <Avatar>
                 <AvatarImage

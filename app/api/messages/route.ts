@@ -4,6 +4,7 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { Priority, Type, Status, Prisma } from "@prisma/client";
 import { translations } from "@/prisma/translations";
+import { log } from "console";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -23,48 +24,47 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = await request.json();
+    const content = await request.json();
+    const personId = parseInt(session.user?.id as string);
+    const ticketId = parseInt(
+      request.headers.get("referer")?.split("/").pop() as string
+    );
 
-    // const ticketSchema = z.object({
-    //   title: z.string().min(1, "Title is required"),
-    //   description: z.string().min(1, "Description is required"),
-    //   type: z.enum(Object.keys(translations.type) as [string, ...string[]]),
-    //   priority: z.enum(
-    //     Object.keys(translations.priority) as [string, ...string[]]
-    //   ),
-    // });
+    const body = { content, personId, ticketId };
 
-    // const parsedBody = ticketSchema.safeParse(body);
+    const messageSchema = z.object({
+      content: z.string().min(1, "Content is required"),
+      personId: z.number().positive("Person ID is required"),
+      ticketId: z.number().positive("Ticket ID is required"),
+    });
 
-    // if (!parsedBody.success) {
-    //   return new Response(JSON.stringify(parsedBody.error.errors), {
-    //     status: 400,
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //   });
-    // }
+    const parsedBody = messageSchema.safeParse(body);
 
-    console.log(body);
+    if (!parsedBody.success) {
+      return new Response(JSON.stringify(parsedBody.error.errors), {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
 
-    // await prisma.ticket.create({
-    //   data: {
-    //     title,
-    //     description,
-    //     type: capitalize(type) as Type,
-    //     priority: capitalize(priority) as Priority,
-    //     client: { connect: { id: parseInt(session.user.id as string) } },
-    //   },
-    // });
+    await prisma.message.create({
+      data: {
+        content: parsedBody.data.content,
+        person: { connect: { id: parsedBody.data.personId } },
+        ticket: { connect: { id: parsedBody.data.ticketId } },
+      },
+    });
 
     return new Response(
-      JSON.stringify({ message: "Ticket creado con éxito" }),
+      JSON.stringify({ message: "Mensaje creado con éxito" }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error(error);
     return new Response(
-      JSON.stringify({ message: "Hubo un error al crear el ticket" }),
+      JSON.stringify({ message: "Hubo un error al crear el mensaje" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
