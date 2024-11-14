@@ -146,36 +146,77 @@ export async function GET(request: Request) {
 function buildWhereCondition(searchParams: URLSearchParams) {
   const whereCondition: Prisma.TicketWhereInput = {};
 
+  // Filtro por estado del ticket . /api/tickets?status=open
   const status = searchParams.get("status")?.toLowerCase();
   if (status) {
     whereCondition.status = capitalize(status) as Status;
   }
 
+  // Filtro por prioridad del ticket . /api/tickets?priority=high
   const priority = searchParams.get("priority")?.toLowerCase();
   if (priority) {
     whereCondition.priority = capitalize(priority) as Priority;
   }
 
+  // Filtro por tipo de ticket . /api/tickets?type=issue
   const type = searchParams.get("type")?.toLowerCase();
   if (type) {
     whereCondition.type = capitalize(type) as Type;
   }
 
-  const assigned = searchParams.get("assigned")?.toLowerCase();
-  if (assigned === "false") {  
-    whereCondition.userId = null;// aca filtra solo tickets sin asignar
-  } else if (assigned === "true") {
-    whereCondition.userId = { not: null };// aca muestra solo tickets asignados
+  // Filtro por si el ticket está asignado o no . /api/tickets?assigned=false
+  const assigned = searchParams.get("assigned");
+  if (assigned === "true") {
+    whereCondition.userId = { not: null }; // Tickets con un usuario asignado
+  } else if (assigned === "false" || !assigned) {
+    whereCondition.userId = null; // Tickets sin un usuario asignado
   }
 
+  // Filtro por ID de cliente . /api/tickets?clientId=456
   const clientId = searchParams.get("clientId");
   if (clientId) {
     whereCondition.clientId = parseInt(clientId);
   }
 
+  // Filtro por ID de usuario asignado . /api/tickets?userId=789
   const userId = searchParams.get("userId");
   if (userId) {
     whereCondition.userId = parseInt(userId);
+  }
+
+  // Filtro por rango de fechas de creación . /api/tickets?createdFrom=2023-01-01&createdTo=2023-12-31
+  const createdFrom = searchParams.get("createdFrom");
+  const createdTo = searchParams.get("createdTo");
+  if (createdFrom || createdTo) {
+    whereCondition.createdAt = {
+      ...(createdFrom ? { gte: new Date(createdFrom) } : {}),
+      ...(createdTo ? { lte: new Date(createdTo) } : {}),
+    };
+  }
+
+  // Filtro por rango de fechas de actualización . /api/tickets?updatedFrom=2023-01-01&updatedTo=2023-12-31
+  const updatedFrom = searchParams.get("updatedFrom");
+  const updatedTo = searchParams.get("updatedTo");
+  if (updatedFrom || updatedTo) {
+    whereCondition.updatedAt = {
+      ...(updatedFrom ? { gte: new Date(updatedFrom) } : {}),
+      ...(updatedTo ? { lte: new Date(updatedTo) } : {}),
+    };
+  }
+
+  // Filtro por código específico de ticket . /api/tickets?ticketId=123
+  const ticketId = searchParams.get("ticketId");
+  if (ticketId) {
+    whereCondition.id = parseInt(ticketId);
+  }
+
+  // Filtro de palabras clave en título o descripción . /api/tickets?keyword=printer
+  const keyword = searchParams.get("keyword");
+  if (keyword) {
+    whereCondition.OR = [
+      { title: { contains: keyword } },  
+      { description: { contains: keyword } },
+    ];
   }
 
   return whereCondition;
