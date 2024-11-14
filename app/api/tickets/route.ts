@@ -161,11 +161,11 @@ function buildWhereCondition(searchParams: URLSearchParams) {
     whereCondition.type = capitalize(type) as Type;
   }
 
-  const assigned = searchParams.get("assigned")?.toLowerCase();
-  if (assigned === "false") {  
-    whereCondition.userId = null;// aca filtra solo tickets sin asignar
-  } else if (assigned === "true") {
-    whereCondition.userId = { not: null };// aca muestra solo tickets asignados
+  const assigned = searchParams.get("assigned");
+  if (assigned === "true") {
+    whereCondition.userId = { not: null };
+  } else if (assigned === "false" || !assigned) {
+    whereCondition.userId = null;
   }
 
   const clientId = searchParams.get("clientId");
@@ -176,6 +176,32 @@ function buildWhereCondition(searchParams: URLSearchParams) {
   const userId = searchParams.get("userId");
   if (userId) {
     whereCondition.userId = parseInt(userId);
+  }
+
+  const createdFrom = searchParams.get("createdFrom");
+  const createdTo = searchParams.get("createdTo");
+  if (createdFrom || createdTo) {
+    whereCondition.createdAt = {
+      ...(createdFrom ? { gte: new Date(createdFrom) } : {}),
+      ...(createdTo ? { lte: new Date(createdTo) } : {}),
+    };
+  }
+
+  const updatedFrom = searchParams.get("updatedFrom");
+  const updatedTo = searchParams.get("updatedTo");
+  if (updatedFrom || updatedTo) {
+    whereCondition.updatedAt = {
+      ...(updatedFrom ? { gte: new Date(updatedFrom) } : {}),
+      ...(updatedTo ? { lte: new Date(updatedTo) } : {}),
+    };
+  }
+
+  const keyword = searchParams.get("keyword");
+  if (keyword) {
+    whereCondition.OR = [
+      { title: { contains: keyword } },
+      { description: { contains: keyword } },
+    ];
   }
 
   return whereCondition;
