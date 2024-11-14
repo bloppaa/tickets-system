@@ -13,12 +13,7 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
-
-function SuspenseSearchParams() {
-  const searchParams = useSearchParams();
-  return searchParams.get("callbackUrl");
-}
+import { useState } from "react";
 
 export default function LoginPage() {
   const {
@@ -27,14 +22,10 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-
-  const callbackUrl = (
-    <Suspense>
-      <SuspenseSearchParams />
-    </Suspense>
-  );
 
   const onSubmit = handleSubmit(async (data) => {
     setEmailError(null);
@@ -47,7 +38,7 @@ export default function LoginPage() {
     });
 
     if (res && res.ok) {
-      router.push(callbackUrl.toString() || "/");
+      router.push(callbackUrl || "/");
     } else if (res?.error === "USER_NOT_FOUND") {
       setEmailError("El usuario no existe");
     } else if (res?.error === "WRONG_PASSWORD") {
