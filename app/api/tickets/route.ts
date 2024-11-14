@@ -162,10 +162,10 @@ function buildWhereCondition(searchParams: URLSearchParams) {
   }
 
   const assigned = searchParams.get("assigned")?.toLowerCase();
-  if (assigned === "false") {
-    whereCondition.userId = null;
+  if (assigned === "false") {  
+    whereCondition.userId = null;// aca filtra solo tickets sin asignar
   } else if (assigned === "true") {
-    whereCondition.userId = { not: null };
+    whereCondition.userId = { not: null };// aca muestra solo tickets asignados
   }
 
   const clientId = searchParams.get("clientId");
