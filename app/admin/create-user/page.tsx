@@ -103,17 +103,16 @@ const CreateUserPage = () => {
                     <SelectValue placeholder="Selecciona el rol" />
                   </SelectTrigger>
                   <SelectContent position="popper">
-                    <SelectItem value="user">Usuario</SelectItem>
-                    <SelectItem value="client">Cliente</SelectItem>
+                    <SelectItem value="User">Usuario</SelectItem>
+                    <SelectItem value="Client">Cliente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              {role === "client" && (
+              {role === "Client" && (
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="companyRut">RUT Empresa</Label>
                   <Input
                     id="companyRut"
-                    name="companyRut"
                     placeholder="76.543.210-8"
                   />
                 </div>
