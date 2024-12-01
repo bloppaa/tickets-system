@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import router from 'next/router'
 
 const formSchema = z.object({
   password: z.string().min(8, {
@@ -50,6 +51,7 @@ export default function ResetPasswordPage() {
     
         if (response.ok) {
             alert("Contraseña restablecida correctamente")
+            router.push("/login")
         } else {
             alert("Error restableciendo la contraseña")
         }
